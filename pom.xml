@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.mycompany</groupId>
+	<groupId>98add779-6666-4151-9c95-f088b9522ec0</groupId>
 	<artifactId>mule-ci-cd-test</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
@@ -12,9 +12,10 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
 		<app.runtime>4.9.11</app.runtime>
-		<mule.maven.plugin.version>4.5.3</mule.maven.plugin.version>
+		<mule.maven.plugin.version>4.6.1</mule.maven.plugin.version>
+		<munit.version>3.6.2</munit.version>
+        <argLine>-Dfile.encoding=UTF-8</argLine>
 	</properties>
 
 	<build>
@@ -29,28 +30,46 @@
 				<artifactId>mule-maven-plugin</artifactId>
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
+				<configuration>
+					<cloudhub2Deployment>
+						<uri>https://anypoint.mulesoft.com</uri>
+						<provider>MC</provider>
+						<environment>dev</environment>
+						<target>Cloudhub-US-East-2</target>
+						<muleVersion>4.10.0</muleVersion>
+						<server>anypoint-exchange-v3</server>
+						<applicationName>mule-ci-cd-test</applicationName>
+						<replicas>1</replicas>
+						<vCores>1</vCores>
+						<deploymentSettings>
+							<generateDefaultPublicUrl>true</generateDefaultPublicUrl>
+						</deploymentSettings>
+					</cloudhub2Deployment>
+				</configuration>
 			</plugin>
 			<plugin>
-			  <groupId>org.mule.tools.maven</groupId>
-			  <artifactId>mule-maven-plugin</artifactId>
-			  <version>4.1.1</version>
-			  <extensions>true</extensions>
-			  <configuration>
-			    <cloudHubDeployment>
-			      <uri>https://anypoint.mulesoft.com</uri>
-			      <muleVersion>4.6.1</muleVersion>
-			      <applicationName>mule-ci-cd-demo</applicationName>
-			      <connectedAppClientId>37516c650ef543fa8bcfae49abb54652</connectedAppClientId>
-			      <connectedAppClientSecret>6359857D11c44aBBA559b883ae1E6568</connectedAppClientSecret>
-				  <connectedAppGrantType>client_credentials</connectedAppGrantType>
-			      <environment>Sandbox</environment>
-			      <region>ca-central-1</region>
-			     <!-- <workers>1</workers>-->
-			      <workerType>MICRO</workerType>
-			    </cloudHubDeployment>
-			  </configuration>
+				<groupId>com.mulesoft.munit.tools</groupId>
+				<artifactId>munit-maven-plugin</artifactId>
+				<version>${munit.version}</version>
+				<executions>
+					<execution>
+						<id>test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+							<goal>coverage-report</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<coverage>
+						<runCoverage>true</runCoverage>
+						<formats>
+							<format>html</format>
+						</formats>
+					</coverage>
+				</configuration>
 			</plugin>
-						
 		</plugins>
 	</build>
 
@@ -66,6 +85,26 @@
 			<artifactId>mule-sockets-connector</artifactId>
 			<version>1.2.7</version>
 			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.munit</groupId>
+			<artifactId>munit-runner</artifactId>
+			<version>3.6.2</version>
+			<classifier>mule-plugin</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.munit</groupId>
+			<artifactId>munit-tools</artifactId>
+			<version>3.6.2</version>
+			<classifier>mule-plugin</classifier>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.weave</groupId>
+			<artifactId>assertions</artifactId>
+			<version>1.2.1</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -95,5 +134,12 @@
 			</snapshots>
 		</pluginRepository>
 	</pluginRepositories>
-
+	<distributionManagement>
+		<repository>
+			<id>anypoint-exchange-v3</id>
+			<name>Corporate Repository</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/98add779-6666-4151-9c95-f088b9522ec0/maven</url>
+			<layout>default</layout>
+		</repository>
+	</distributionManagement>
 </project>
