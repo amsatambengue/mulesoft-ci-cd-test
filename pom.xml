@@ -30,6 +30,27 @@
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
 			</plugin>
+			<plugin>
+			  <groupId>org.mule.tools.maven</groupId>
+			  <artifactId>mule-maven-plugin</artifactId>
+			  <version>4.1.1</version>
+			  <extensions>true</extensions>
+			  <configuration>
+			    <cloudHubDeployment>
+			      <uri>https://anypoint.mulesoft.com</uri>
+			      <muleVersion>4.6.1</muleVersion>
+			      <applicationName>mule-ci-cd-demo</applicationName>
+			      <connectedAppClientId>37516c650ef543fa8bcfae49abb54652</connectedAppClientId>
+			      <connectedAppClientSecret>6359857D11c44aBBA559b883ae1E6568</connectedAppClientSecret>
+				  <connectedAppGrantType>client_credentials</connectedAppGrantType>
+			      <environment>Sandbox</environment>
+			      <region>ca-central-1</region>
+			     <!-- <workers>1</workers>-->
+			      <workerType>MICRO</workerType>
+			    </cloudHubDeployment>
+			  </configuration>
+			</plugin>
+						
 		</plugins>
 	</build>
 
