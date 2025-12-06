@@ -7,18 +7,19 @@
 		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
 		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
-	<munit:config name="mule-ci-cd-test-suite.xml" />
-	<munit:test name="mule-ci-cd-testFlow-test" doc:id="04248e98-9cd9-4402-8d06-27b2e322bb93" >
+	<munit:config name="mule-ci-cd-suite.xml" />
+	<munit:test name="mule-ci-cd-testFlow-test" doc:id="5c541c86-67a2-4d58-a100-92ca1bc5248d" >
 		<munit:behavior >
-			<munit:set-event doc:name="Set Input" doc:id="9a1070b2-794c-4a04-a977-3c70dbe66d50" >
-				<munit:payload value="#[readUrl('classpath://mulecicdtestFlowtest\set-event_payload.dwl')]" encoding="UTF-8" />
+			<munit:set-event doc:name="Set Input" doc:id="812efe59-cb64-4c70-9309-7e074fd76c2e" >
+				<munit:payload value="#[readUrl('classpath://mulecicdtestFlowtest1\set-event_payload.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://mulecicdtestFlowtest1\set-event_attributes.dwl')]" />
 			</munit:set-event>
 		</munit:behavior>
 		<munit:execution >
-			<flow-ref doc:name="Flow-ref to mule-ci-cd-testFlow" doc:id="02290a35-c6e8-42de-8bb7-5c8e25f8a862" name="mule-ci-cd-testFlow"/>
+			<flow-ref doc:name="Flow-ref to mule-ci-cd-testFlow" doc:id="531c3dc8-0745-46a7-a6d6-afd8a50f727a" name="mule-ci-cd-testFlow"/>
 		</munit:execution>
 		<munit:validation >
-			<munit-tools:assert doc:name="Assert payload" doc:id="bd37cbf3-63c0-4751-a781-0a9c7b9059f7" message="The payload does not match">
+			<munit-tools:assert doc:name="Assert payload" doc:id="fb2d42d7-1a91-419d-b2d8-e8244cd92ac6" message="The payload does not match">
 				<munit-tools:that ><![CDATA[#[%dw 2.0
 import mulecicdtestFlowtest::assert_expression_payload
 ---

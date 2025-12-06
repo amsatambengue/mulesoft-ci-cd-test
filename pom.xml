@@ -6,10 +6,15 @@
 	<artifactId>mule-ci-cd</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
+	
+	<name>mule-ci-cd-${env}</name>
 
-	<name>mule-ci-cd</name>
-
-	<properties>
+	<properties>	
+	    <app.name>${project.artifactId}-${env}</app.name>
+	
+		<!-- Environnement par défaut -->
+		<mule.env>dev</mule.env>
+		
 	    <!-- Encodage & JVM -->
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -20,19 +25,10 @@
 	    <mule.runtime.version>4.9.11</mule.runtime.version>
 	    <mule.maven.plugin.version>4.6.1</mule.maven.plugin.version>
 	    <munit.version>3.6.2</munit.version>
-	
-	    <!-- Métadonnées applicatives -->
-	    <app.name>${project.artifactId}</app.name>
-	    <!-- env logique (dev/test/prod) : par défaut dev -->
-	    <app.env>dev</app.env>
-	    <!-- nom final de l’appli sur CloudHub -->
-	    <app.fullName>${app.name}-${app.env}</app.fullName>
-	
-	    <!-- CloudHub 2.0 / RTF / cible -->
+		
+	    <!-- CloudHub 2.0 / RTF / cible par défaut -->
 	    <cloudhub.orgId>98add779-6666-4151-9c95-f088b9522ec0</cloudhub.orgId>
-	    <!-- pour CH2 : nom de l’environnement Anypoint -->
-	    <cloudhub.environment>${app.env}</cloudhub.environment>
-	    <!-- target CH2 (exactement comme dans Runtime Manager) -->
+	    <cloudhub.environment>${env}</cloudhub.environment>
 	    <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
 	    <cloudhub.replicas>1</cloudhub.replicas>
 	    <cloudhub.vCores>0.1</cloudhub.vCores>
@@ -47,27 +43,33 @@
 	    <profile>
 	        <id>dev</id>
 	        <properties>
-	            <app.env>dev</app.env>
+	            <mule.env>dev</mule.env>
 	            <cloudhub.environment>dev</cloudhub.environment>
 	            <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
+	            <cloudhub.replicas>1</cloudhub.replicas>
+	    		<cloudhub.vCores>0.1</cloudhub.vCores>
 	        </properties>
 	    </profile>
 	
 	    <profile>
 	        <id>test</id>
 	        <properties>
-	            <app.env>test</app.env>
+	        	<mule.env>test</mule.env>
 	            <cloudhub.environment>test</cloudhub.environment>
 	            <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
+	            <cloudhub.replicas>1</cloudhub.replicas>
+	    		<cloudhub.vCores>0.1</cloudhub.vCores>
 	        </properties>
 	    </profile>
 	
 	    <profile>
 	        <id>prod</id>
 	        <properties>
-	            <app.env>prod</app.env>
+	        	<mule.env>prod</mule.env>
 	            <cloudhub.environment>prod</cloudhub.environment>
 	            <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
+	            <cloudhub.replicas>1</cloudhub.replicas>
+	    		<cloudhub.vCores>0.1</cloudhub.vCores>
 	        </properties>
 	    </profile>
 	    
@@ -114,7 +116,7 @@
 			            <target>${cloudhub.target}</target>
 			            <muleVersion>${mule.runtime.version}</muleVersion>
 			            <server>anypoint-exchange-v3</server>
-			            <applicationName>${app.fullName}</applicationName>
+			            <applicationName>${app.name}</applicationName>
 			            <replicas>${cloudhub.replicas}</replicas>
 			            <vCores>${cloudhub.vCores}</vCores>
 			            <deploymentSettings>
