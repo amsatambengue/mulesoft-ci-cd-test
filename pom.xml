@@ -31,7 +31,7 @@
 	    <!-- CloudHub 2.0 / RTF / cible -->
 	    <cloudhub.orgId>98add779-6666-4151-9c95-f088b9522ec0</cloudhub.orgId>
 	    <!-- pour CH2 : nom de l’environnement Anypoint -->
-	    <cloudhub.environment>dev</cloudhub.environment>
+	    <cloudhub.environment>${app.env}</cloudhub.environment>
 	    <!-- target CH2 (exactement comme dans Runtime Manager) -->
 	    <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
 	    <cloudhub.replicas>1</cloudhub.replicas>

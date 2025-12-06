@@ -1,4 +1,4 @@
-environment: "development"
+environment: "test"
 
 http:
   listener:
@@ -13,6 +13,4 @@ database:
   port: ""
   user: ""
   password: ""
-  name: "" 
-  
-  
+  name: ""
