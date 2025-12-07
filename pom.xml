@@ -84,6 +84,18 @@
 	            <cloudhub.replicas>2</cloudhub.replicas>
 	        </properties>
 	    </profile>
+	   	<!-- CI -->
+	    <profile>
+	    	<id>ci</id>
+			<properties>
+			    <!-- Skip JUnit tests -->
+			    <maven.test.skip>true</maven.test.skip>
+			    <!-- Skip MUnit tests -->
+			    <munit.skip>true</munit.skip>
+			    <!-- Force encoding for CI -->
+			    <argLine>-Dfile.encoding=UTF-8</argLine>
+			</properties>
+		</profile>	    
 	</profiles>
 
 
@@ -133,8 +145,13 @@
 					</execution>
 				</executions>
 				<configuration>
+				    <!-- Lien avec ton profil ci -->
+    				<skipMunitTests>${munit.skip}</skipMunitTests>
 					<coverage>
 						<runCoverage>true</runCoverage>
+						<failBuild>true</failBuild>
+						<requiredApplicationCoverage>75</requiredApplicationCoverage>
+						<requiredFlowCoverage>50</requiredFlowCoverage>
 						<formats>
 							<format>html</format>
 						</formats>
