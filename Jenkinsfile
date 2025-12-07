@@ -28,24 +28,106 @@ pipeline {
                             passwordVariable: 'CLIENT_SECRET'
                         )
                     ]) {
-                        withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
+                withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
 
-                            // settings.xml pour anypoint-exchange-v3
+                    // settings.xml complet avec tous les repositories MuleSoft
                     sh '''
                         mkdir -p ~/.m2
                         cat > ~/.m2/settings.xml <<XMLEOF
 <?xml version="1.0"?>
 <settings>
   <pluginGroups>
-      <pluginGroup>org.mule.tools</pluginGroup>
+    <pluginGroup>org.mule.tools</pluginGroup>
   </pluginGroups>
+  
   <servers>
     <server>
       <id>anypoint-exchange-v3</id>
       <username>~~~Client~~~</username>
       <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
     </server>
+    <server>
+      <id>mule-enterprise</id>
+      <username>~~~Client~~~</username>
+      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+    </server>
+    <server>
+      <id>mulesoft-releases</id>
+      <username>~~~Client~~~</username>
+      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+    </server>
   </servers>
+
+  <profiles>
+    <profile>
+      <id>mule-repos</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>mule-enterprise</id>
+          <name>Mule Enterprise Repository</name>
+          <url>https://repository.mulesoft.org/nexus-ee/content/repositories/releases-ee/</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>mulesoft-releases</id>
+          <name>Mulesoft Releases Repository</name>
+          <url>https://repository.mulesoft.org/releases/</url>
+          <layout>default</layout>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <repository>
+          <id>anypoint-exchange-v3</id>
+          <name>Anypoint Exchange V3</name>
+          <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      
+      <pluginRepositories>
+        <pluginRepository>
+          <id>mule-enterprise</id>
+          <name>Mule Enterprise Repository</name>
+          <url>https://repository.mulesoft.org/nexus-ee/content/repositories/releases-ee/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+          <id>mulesoft-releases</id>
+          <name>Mulesoft Releases Repository</name>
+          <url>https://repository.mulesoft.org/releases/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
 </settings>
 XMLEOF
                     '''
