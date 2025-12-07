@@ -39,8 +39,8 @@ pipeline {
   <servers>
     <server>
       <id>anypoint-exchange-v3</id>
-      <username>\${CLIENT_ID}</username>
-      <password>\${CLIENT_SECRET}</password>
+      <username>~~~Client~~~</username>
+      <password>${client.id}~?~${client.secret}</password>
     </server>
   </servers>
 </settings>
@@ -53,7 +53,9 @@ EOF
                                 sh """
                                     mvn clean deploy \
                                         -Denv=${DEPLOY_ENV} \
-                                        -DmuleDeploy
+                                        -DmuleDeploy \
+                                        -Dclient.id=\${CLIENT_ID} \
+                                        -Dclient.secret=\${CLIENT_SECRET}
                                 """
                             } else {
                                 echo "🌍 Déploiement ${env.DEPLOY_ENV} en mode CI (-Pci, sans tests)"
@@ -62,7 +64,9 @@ EOF
                                     mvn clean deploy \
                                         -Denv=${DEPLOY_ENV} \
                                         -Pci \
-                                        -DmuleDeploy
+                                        -DmuleDeploy \
+                                        -Dclient.id=\${CLIENT_ID} \
+                                        -Dclient.secret=\${CLIENT_SECRET}
                                 """
                             }
                         }
