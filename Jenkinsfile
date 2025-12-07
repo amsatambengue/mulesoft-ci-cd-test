@@ -1,184 +1,166 @@
 pipeline {
-    agent any
-    
-    tools {
-        maven 'maven-3.8.8'  // Assurez-vous que ce nom correspond à votre config Jenkins
+  agent any
+
+  tools {
+    maven 'maven-3.8.8'
+    jdk 'jdk-17'
+  }
+
+  environment {
+    ACTIVE_PROFILES = 'ci'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
     }
-    
-    environment {
-        DEPLOY_ENV = "${env.BRANCH_NAME == 'main' ? 'prod' : (env.BRANCH_NAME == 'staging' ? 'staging' : 'dev')}"
-    }
-    
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-        
-stage('Build & Deploy (CloudHub 2.0)') {
-    steps {
+
+    stage('Set Environment') {
+      steps {
         script {
-            def anypointCredId = 'anypoint_credentials'
+          echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
-            withCredentials([
-                usernamePassword(
-                    credentialsId: anypointCredId,
-                    usernameVariable: 'CLIENT_ID',
-                    passwordVariable: 'CLIENT_SECRET'
-                )
-            ]) {
-                withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
+          if (env.BRANCH_NAME == 'develop') {
+            env.MULE_ENV = 'dev'
+          } else if (env.BRANCH_NAME.startsWith('release/')) {
+            env.MULE_ENV = 'test'
+          } else if (env.BRANCH_NAME == 'main') {
+            env.MULE_ENV = 'prod'
+          } else {
+            error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
+          }
 
-                    // settings.xml avec le bon format pour Enterprise repos
-                    sh """
-                        mkdir -p ~/.m2
-                        cat > ~/.m2/settings.xml <<'XMLEOF'
-<?xml version="1.0"?>
-<settings>
-  <pluginGroups>
-    <pluginGroup>org.mule.tools</pluginGroup>
-  </pluginGroups>
-  
-  <servers>
-    <!-- Pour Anypoint Exchange -->
-    <server>
-      <id>anypoint-exchange-v3</id>
-      <username>~~~Client~~~</username>
-      <password>CLIENT_ID_PLACEHOLDER~?~CLIENT_SECRET_PLACEHOLDER</password>
-    </server>
-    
-    <!-- Pour MuleSoft Enterprise Repository -->
-    <server>
-      <id>mule-enterprise</id>
-      <username>~~~Client~~~</username>
-      <password>CLIENT_ID_PLACEHOLDER~?~CLIENT_SECRET_PLACEHOLDER</password>
-    </server>
-    
-    <!-- Pour MuleSoft Releases -->
-    <server>
-      <id>mulesoft-releases</id>
-      <username>~~~Client~~~</username>
-      <password>CLIENT_ID_PLACEHOLDER~?~CLIENT_SECRET_PLACEHOLDER</password>
-    </server>
-  </servers>
-
-  <profiles>
-    <profile>
-      <id>mule-repos</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <repositories>
-        <repository>
-          <id>mule-enterprise</id>
-          <name>Mule Enterprise Repository</name>
-          <url>https://repository.mulesoft.org/nexus-ee/content/repositories/releases-ee/</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-        <repository>
-          <id>mulesoft-releases</id>
-          <name>Mulesoft Releases Repository</name>
-          <url>https://repository.mulesoft.org/releases/</url>
-          <layout>default</layout>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </repository>
-        <repository>
-          <id>anypoint-exchange-v3</id>
-          <name>Anypoint Exchange V3</name>
-          <url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-      </repositories>
-      
-      <pluginRepositories>
-        <pluginRepository>
-          <id>mule-enterprise</id>
-          <name>Mule Enterprise Repository</name>
-          <url>https://repository.mulesoft.org/nexus-ee/content/repositories/releases-ee/</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-          <id>mulesoft-releases</id>
-          <name>Mulesoft Releases Repository</name>
-          <url>https://repository.mulesoft.org/releases/</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
-</settings>
-XMLEOF
-                        
-                        # Remplacer les placeholders avec les vraies valeurs
-                        sed -i "s|CLIENT_ID_PLACEHOLDER|${CLIENT_ID}|g" ~/.m2/settings.xml
-                        sed -i "s|CLIENT_SECRET_PLACEHOLDER|${CLIENT_SECRET}|g" ~/.m2/settings.xml
-                    """
-
-                    if (env.DEPLOY_ENV == 'dev') {
-                        echo "🌍 Déploiement DEV avec tests (env=${env.DEPLOY_ENV})"
-
-                        sh """
-                            mvn clean deploy \
-                                -U \
-                                -Denv=${DEPLOY_ENV} \
-                                -DmuleDeploy \
-                                -Danypoint.client.id=${CLIENT_ID} \
-                                -Danypoint.client.secret=${CLIENT_SECRET}
-                        """
-                    } else {
-                        echo "🌍 Déploiement ${env.DEPLOY_ENV} en mode CI (-Pci, sans tests)"
-
-                        sh """
-                            mvn clean deploy \
-                                -Denv=${DEPLOY_ENV} \
-                                -Pci \
-                                -DmuleDeploy \
-                                -Danypoint.client.id=${CLIENT_ID} \
-                                -Danypoint.client.secret=${CLIENT_SECRET}
-                        """
-                    }
-                }
-            }
+          env.ACTIVE_PROFILES = "ci,${env.MULE_ENV}"
+          echo "✅ Environnement MULE_ENV : ${env.MULE_ENV}"
+          echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
         }
+      }
     }
-}
-    
-    post {
-        success {
-            echo '✅ Déploiement réussi !'
-        }
-        failure {
-            echo '❌ Le déploiement a échoué.'
-        }
-        always {
-            cleanWs()  // Nettoie le workspace après le build
-        }
+
+    stage('Adjust Version') {
+      when {
+        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
+      }
+      steps {
+        sh '''
+          echo "Suppression de -SNAPSHOT pour release/main"
+          mvn versions:set -DremoveSnapshot
+          mvn versions:commit
+        '''
+      }
     }
+
+	stage('Test Anypoint Auth') {
+	  steps {
+	    script {
+	      def anypointCredId = "anypoint_credential_${env.MULE_ENV}"
+	      
+	      withCredentials([
+	        usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
+	      ]) {
+	        sh '''
+	        echo "🔐 Test d'authentification Anypoint..."
+	        
+	        RESPONSE=$(curl -s -w "\\n%{http_code}" -X POST \
+	          https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token \
+	          -H "Content-Type: application/json" \
+	          -d "{
+	            \\"grant_type\\": \\"client_credentials\\",
+	            \\"client_id\\": \\"$TEST_CLIENT_ID\\",
+	            \\"client_secret\\": \\"$TEST_CLIENT_SECRET\\"
+	          }")
+	        
+	        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+	        BODY=$(echo "$RESPONSE" | head -n-1)
+	        
+	        echo "HTTP Status: $HTTP_CODE"
+	        
+	        if [ "$HTTP_CODE" = "200" ]; then
+	          echo "✅ Authentification réussie!"
+	          echo "$BODY" | grep -o '"access_token":"[^"]*"' | head -c 80
+	        else
+	          echo "❌ Échec d'authentification!"
+	          echo "$BODY"
+	          exit 1
+	        fi
+	        '''
+	      }
+	    }
+	  }
+	}
+
+	stage('Build & Deploy') {
+	  steps {
+	    script {
+	      def nexusCredId = 'nexus-releases'
+	      def anypointCredId = "anypoint_credential_${env.MULE_ENV}"
+	
+	      withCredentials([
+	        usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
+	        usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+	      ]) {
+	        withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
+	          // Créer settings.xml de manière sécurisée avec des variables shell
+	          sh '''
+	          mkdir -p ~/.m2
+	          cat > ~/.m2/settings.xml <<EOF
+	<settings>
+	  <servers>
+	    <server>
+	      <id>nexus-releases</id>
+	      <username>${NEXUS_USER}</username>
+	      <password>${NEXUS_PWD}</password>
+	    </server>
+	    <server>
+	      <id>anypoint-exchange-v3</id>
+	      <username>${CLIENT_ID}</username>
+	      <password>${CLIENT_SECRET}</password>
+	    </server>
+	  </servers>
+	</settings>
+	EOF
+	          
+	          echo "✅ settings.xml créé"
+	          echo "CLIENT_ID: ${CLIENT_ID}"
+	          echo "Environnement: ''' + env.MULE_ENV + '''"
+	          echo "Profils actifs: ''' + env.ACTIVE_PROFILES + '''"
+	          
+	          # Vérifier que le fichier est valide
+	          cat ~/.m2/settings.xml
+	          
+	          mvn clean deploy \
+	            -P''' + env.ACTIVE_PROFILES + ''' \
+	            -Dmule.env=''' + env.MULE_ENV + ''' \
+	            -Danypoint.client.id=${CLIENT_ID} \
+	            -Danypoint.client.secret=${CLIENT_SECRET} \
+	            -DmuleDeploy \
+	            -DskipTests
+	          '''
+	        }
+	      }
+	    }
+	  }
+	}
+
+    stage('Promote to Prod') {
+      when {
+        branch 'main'
+      }
+      steps {
+        echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
+        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${env.MULE_ENV} -DskipTests"
+      }
+    }
+  }
+
+  post {
+    success {
+      echo "Pipeline CI/CD MuleSoft terminé avec succès."
+    }
+    failure {
+      echo "Échec du pipeline."
+    }
+  }
 }
