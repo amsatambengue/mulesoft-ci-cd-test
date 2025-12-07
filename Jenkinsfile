@@ -19,7 +19,7 @@ pipeline {
         stage('Build & Deploy (CloudHub 2.0)') {
             steps {
                 script {
-                    def anypointCredId = 'anypoint_credentials'
+                    def anypointCredId = 'anypoint-connected-app-dev'
 
                     withCredentials([
                         usernamePassword(
