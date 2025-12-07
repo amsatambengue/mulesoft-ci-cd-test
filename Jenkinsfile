@@ -16,21 +16,21 @@ pipeline {
             }
         }
         
-stage('Build & Deploy (CloudHub 2.0)') {
-    steps {
-        script {
-            def anypointCredId = 'anypoint_credentials'
+        stage('Build & Deploy (CloudHub 2.0)') {
+            steps {
+                script {
+                    def anypointCredId = 'anypoint_credentials'
 
-            withCredentials([
-                usernamePassword(
-                    credentialsId: anypointCredId,
-                    usernameVariable: 'CLIENT_ID',
-                    passwordVariable: 'CLIENT_SECRET'
-                )
-            ]) {
-                withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: anypointCredId,
+                            usernameVariable: 'CLIENT_ID',
+                            passwordVariable: 'CLIENT_SECRET'
+                        )
+                    ]) {
+                        withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
 
-                    // settings.xml pour anypoint-exchange-v3
+                            // settings.xml pour anypoint-exchange-v3
                     sh '''
                         mkdir -p ~/.m2
                         cat > ~/.m2/settings.xml <<XMLEOF
