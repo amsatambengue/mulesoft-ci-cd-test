@@ -35,7 +35,11 @@ pipeline {
                                 mkdir -p ~/.m2
 
                                 cat > ~/.m2/settings.xml <<EOF
+<?xml version="1.0"?>
 <settings>
+  <pluginGroups>
+      <pluginGroup>org.mule.tools</pluginGroup>
+  </pluginGroups>
   <servers>
     <server>
       <id>anypoint-exchange-v3</id>
