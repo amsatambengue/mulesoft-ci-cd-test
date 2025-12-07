@@ -16,39 +16,39 @@ pipeline {
             }
         }
         
-	stage('Build & Deploy (CloudHub 2.0)') {
-	    steps {
-	        script {
-	            def anypointCredId = 'anypoint_credentials'
-	
-	            withCredentials([
-	                usernamePassword(
-	                    credentialsId: anypointCredId,
-	                    usernameVariable: 'CLIENT_ID',
-	                    passwordVariable: 'CLIENT_SECRET'
-	                )
-	            ]) {
-	                withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
-	
-	                    // settings.xml pour anypoint-exchange-v3
-	                    sh '''
-	                        mkdir -p ~/.m2
-	                        cat > ~/.m2/settings.xml <<XMLEOF
-	<?xml version="1.0"?>
-	<settings>
-	  <pluginGroups>
-	      <pluginGroup>org.mule.tools</pluginGroup>
-	  </pluginGroups>
-	  <servers>
-	    <server>
-	      <id>anypoint-exchange-v3</id>
-	      <username>~~~Client~~~</username>
-	      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
-	    </server>
-	  </servers>
-	</settings>
-	XMLEOF
-	                    '''
+stage('Build & Deploy (CloudHub 2.0)') {
+    steps {
+        script {
+            def anypointCredId = 'anypoint_credentials'
+
+            withCredentials([
+                usernamePassword(
+                    credentialsId: anypointCredId,
+                    usernameVariable: 'CLIENT_ID',
+                    passwordVariable: 'CLIENT_SECRET'
+                )
+            ]) {
+                withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
+
+                    // settings.xml pour anypoint-exchange-v3
+                    sh '''
+                        mkdir -p ~/.m2
+                        cat > ~/.m2/settings.xml <<XMLEOF
+<?xml version="1.0"?>
+<settings>
+  <pluginGroups>
+      <pluginGroup>org.mule.tools</pluginGroup>
+  </pluginGroups>
+  <servers>
+    <server>
+      <id>anypoint-exchange-v3</id>
+      <username>~~~Client~~~</username>
+      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+    </server>
+  </servers>
+</settings>
+XMLEOF
+                    '''
 
                             if (env.DEPLOY_ENV == 'dev') {
                                 echo "🌍 Déploiement DEV avec tests (env=${env.DEPLOY_ENV})"
