@@ -16,24 +16,24 @@ pipeline {
             }
         }
         
-        stage('Build & Deploy (CloudHub 2.0)') {
-            steps {
-                script {
-                    def anypointCredId = 'anypoint-connected-app-dev'
+stage('Build & Deploy (CloudHub 2.0)') {
+    steps {
+        script {
+            def anypointCredId = 'anypoint_credentials'
 
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: anypointCredId,
-                            usernameVariable: 'CLIENT_ID',
-                            passwordVariable: 'CLIENT_SECRET'
-                        )
-                    ]) {
+            withCredentials([
+                usernamePassword(
+                    credentialsId: anypointCredId,
+                    usernameVariable: 'CLIENT_ID',
+                    passwordVariable: 'CLIENT_SECRET'
+                )
+            ]) {
                 withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
 
-                    // settings.xml complet avec tous les repositories MuleSoft
-                    sh '''
+                    // settings.xml avec le bon format pour Enterprise repos
+                    sh """
                         mkdir -p ~/.m2
-                        cat > ~/.m2/settings.xml <<XMLEOF
+                        cat > ~/.m2/settings.xml <<'XMLEOF'
 <?xml version="1.0"?>
 <settings>
   <pluginGroups>
@@ -41,20 +41,25 @@ pipeline {
   </pluginGroups>
   
   <servers>
+    <!-- Pour Anypoint Exchange -->
     <server>
       <id>anypoint-exchange-v3</id>
       <username>~~~Client~~~</username>
-      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+      <password>CLIENT_ID_PLACEHOLDER~?~CLIENT_SECRET_PLACEHOLDER</password>
     </server>
+    
+    <!-- Pour MuleSoft Enterprise Repository -->
     <server>
       <id>mule-enterprise</id>
       <username>~~~Client~~~</username>
-      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+      <password>CLIENT_ID_PLACEHOLDER~?~CLIENT_SECRET_PLACEHOLDER</password>
     </server>
+    
+    <!-- Pour MuleSoft Releases -->
     <server>
       <id>mulesoft-releases</id>
       <username>~~~Client~~~</username>
-      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+      <password>CLIENT_ID_PLACEHOLDER~?~CLIENT_SECRET_PLACEHOLDER</password>
     </server>
   </servers>
 
@@ -130,36 +135,40 @@ pipeline {
   </profiles>
 </settings>
 XMLEOF
-                    '''
+                        
+                        # Remplacer les placeholders avec les vraies valeurs
+                        sed -i "s|CLIENT_ID_PLACEHOLDER|${CLIENT_ID}|g" ~/.m2/settings.xml
+                        sed -i "s|CLIENT_SECRET_PLACEHOLDER|${CLIENT_SECRET}|g" ~/.m2/settings.xml
+                    """
 
-                            if (env.DEPLOY_ENV == 'dev') {
-                                echo "🌍 Déploiement DEV avec tests (env=${env.DEPLOY_ENV})"
+                    if (env.DEPLOY_ENV == 'dev') {
+                        echo "🌍 Déploiement DEV avec tests (env=${env.DEPLOY_ENV})"
 
-                                sh """
-                                    mvn clean deploy \
-                                        -Denv=${DEPLOY_ENV} \
-                                        -DmuleDeploy \
-                                        -Dclient.id=\${CLIENT_ID} \
-                                        -Dclient.secret=\${CLIENT_SECRET}
-                                """
-                            } else {
-                                echo "🌍 Déploiement ${env.DEPLOY_ENV} en mode CI (-Pci, sans tests)"
+                        sh """
+                            mvn clean deploy \
+                                -U \
+                                -Denv=${DEPLOY_ENV} \
+                                -DmuleDeploy \
+                                -Danypoint.client.id=${CLIENT_ID} \
+                                -Danypoint.client.secret=${CLIENT_SECRET}
+                        """
+                    } else {
+                        echo "🌍 Déploiement ${env.DEPLOY_ENV} en mode CI (-Pci, sans tests)"
 
-                                sh """
-                                    mvn clean deploy \
-                                        -Denv=${DEPLOY_ENV} \
-                                        -Pci \
-                                        -DmuleDeploy \
-                                        -Dclient.id=\${CLIENT_ID} \
-                                        -Dclient.secret=\${CLIENT_SECRET}
-                                """
-                            }
-                        }
+                        sh """
+                            mvn clean deploy \
+                                -Denv=${DEPLOY_ENV} \
+                                -Pci \
+                                -DmuleDeploy \
+                                -Danypoint.client.id=${CLIENT_ID} \
+                                -Danypoint.client.secret=${CLIENT_SECRET}
+                        """
                     }
                 }
             }
         }
     }
+}
     
     post {
         success {
