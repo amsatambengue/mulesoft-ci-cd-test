@@ -56,6 +56,7 @@ XMLEOF
                                 sh """
                                     mvn clean deploy \
                                         -Denv=${DEPLOY_ENV} \
+                                        -Pci \
                                         -DmuleDeploy \
                                         -Dclient.id=\${CLIENT_ID} \
                                         -Dclient.secret=\${CLIENT_SECRET}
