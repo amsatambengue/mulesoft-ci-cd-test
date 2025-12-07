@@ -7,13 +7,13 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 	
-	<name>mule-ci-cd-${mule.env}</name>
+	<name>mule-ci-cd-${env}</name>
 
 	<properties>	
-	    <app.name>${project.artifactId}-${mule.env}</app.name>
-	
-		<!-- Environnement par défaut -->
-		<mule.env>dev</mule.env>
+	    <app.name>${project.artifactId}-${env}</app.name>
+	    	
+		<!-- env par défaut -->
+		<env>dev</env>
 		
 	    <!-- Encodage & JVM -->
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -28,7 +28,7 @@
 		
 	    <!-- CloudHub 2.0 / RTF / cible par défaut -->
 	    <cloudhub.orgId>98add779-6666-4151-9c95-f088b9522ec0</cloudhub.orgId>
-	    <cloudhub.environment>${mule.env}</cloudhub.environment>
+	    <cloudhub.environment>${env}</cloudhub.environment>
 	    <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
 	    <cloudhub.replicas>1</cloudhub.replicas>
 	    <cloudhub.vCores>0.1</cloudhub.vCores>
@@ -40,60 +40,52 @@
 	</properties>
 
 	<profiles>
+	    <!-- DEV -->
 	    <profile>
-	        <id>dev</id>
+	        <id>dev-sizing</id>
+	        <activation>
+	            <property>
+	                <name>env</name>
+	                <value>dev</value>
+	            </property>
+	        </activation>
 	        <properties>
-	            <mule.env>dev</mule.env>
-	            <cloudhub.environment>dev</cloudhub.environment>
-	            <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
+	            <cloudhub.vCores>0.1</cloudhub.vCores>
 	            <cloudhub.replicas>1</cloudhub.replicas>
-	    		<cloudhub.vCores>0.1</cloudhub.vCores>
 	        </properties>
 	    </profile>
 	
+	    <!-- TEST -->
 	    <profile>
-	        <id>test</id>
+	        <id>test-sizing</id>
+	        <activation>
+	            <property>
+	                <name>env</name>
+	                <value>test</value>
+	            </property>
+	        </activation>
 	        <properties>
-	        	<mule.env>test</mule.env>
-	            <cloudhub.environment>test</cloudhub.environment>
-	            <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
+	            <cloudhub.vCores>0.2</cloudhub.vCores>
 	            <cloudhub.replicas>1</cloudhub.replicas>
-	    		<cloudhub.vCores>0.1</cloudhub.vCores>
 	        </properties>
 	    </profile>
 	
+	    <!-- PROD -->
 	    <profile>
-	        <id>prod</id>
+	        <id>prod-sizing</id>
+	        <activation>
+	            <property>
+	                <name>env</name>
+	                <value>prod</value>
+	            </property>
+	        </activation>
 	        <properties>
-	        	<mule.env>prod</mule.env>
-	            <cloudhub.environment>prod</cloudhub.environment>
-	            <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
-	            <cloudhub.replicas>1</cloudhub.replicas>
-	    		<cloudhub.vCores>0.1</cloudhub.vCores>
+	            <cloudhub.vCores>0.4</cloudhub.vCores>
+	            <cloudhub.replicas>2</cloudhub.replicas>
 	        </properties>
 	    </profile>
-	    
-		<profile>
-		  <id>ci</id>
-		  <activation>
-		    <property>
-		      <name>env.CI</name>
-		      <value>true</value>
-		    </property>
-		  </activation>
-		  <properties>
-		    <!-- Désactive les tests JUnit classiques -->
-		    <maven.test.skip>true</maven.test.skip>
-		
-		    <!-- Désactive les tests MUnit en CI rapide (si tu veux) -->
-		    <munit.skip>true</munit.skip>
-		
-		    <!-- Uniformise l'encodage pour éviter les surprises -->
-		    <argLine>-Dfile.encoding=UTF-8</argLine>
-		  </properties>
-		</profile>
-
 	</profiles>
+
 
 	<build>
 		<plugins>

@@ -1,0 +1,7 @@
+%dw 2.0
+import * from dw::test::Asserts
+---
+payload must equalTo({
+  "message": "Mule CI/CD Test Successfull",
+  "environment": "development"
+})

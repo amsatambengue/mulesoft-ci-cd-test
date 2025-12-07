@@ -27,6 +27,25 @@ assert_expression_payload::main({payload: payload, attributes: attributes, vars:
 			</munit-tools:assert>
 		</munit:validation>
 	</munit:test>
+	<munit:test name="mule-ci-cd-testFlow-test1" doc:id="80f844c1-567d-4a0a-8e85-4892c3120278" >
+		<munit:behavior >
+			<munit:set-event doc:name="Set Input" doc:id="65de7e17-2ede-4ecc-b47c-5a788dc5a693" >
+				<munit:payload value="#[readUrl('classpath://mulecicdtestFlowtest1\set-event_payload.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://mulecicdtestFlowtest1\set-event_attributes.dwl')]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to mule-ci-cd-testFlow" doc:id="a7d47ac5-8c55-4a91-9a0b-c1df6adb861b" name="mule-ci-cd-testFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="c935c5d2-1f76-45ee-a885-9c952433ec78" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import mulecicdtestFlowtest1::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
 
 
 </mule>
