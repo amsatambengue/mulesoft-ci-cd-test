@@ -55,7 +55,7 @@ pipeline {
 	stage('Test Anypoint Auth') {
 	  steps {
 	    script {
-	      def anypointCredId = "anypoint_credential_${env.MULE_ENV}"
+	      def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
 	      
 	      withCredentials([
 	        usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
