@@ -108,17 +108,20 @@ stage('Build & Deploy') {
             mkdir -p ~/.m2
             cat > ~/.m2/settings.xml <<'XMLEOF'
 <settings>
+  <pluginGroups>
+    <pluginGroup>org.mule.tools</pluginGroup>
+  </pluginGroups>
   <servers>
     <server>
       <id>nexus-releases</id>
       <username>NEXUS_USER_PLACEHOLDER</username>
       <password>NEXUS_PWD_PLACEHOLDER</password>
     </server>
-	<server>
-	    <id>anypoint-exchange-v3</id>
-	    <username>~~~Client~~~</username>
-	    <password>${CLIENT_ID_PLACEHOLDER}~?~${CLIENT_SECRET_PLACEHOLDER}</password>
-	</server>
+    <server>
+      <id>anypoint-exchange-v3</id>
+      <username>~~~Client~~~</username>
+      <password>${CLIENT_ID_PLACEHOLDER}~?~${CLIENT_SECRET_PLACEHOLDER}</password>
+    </server>
   </servers>
 </settings>
 XMLEOF
