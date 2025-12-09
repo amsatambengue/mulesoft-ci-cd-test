@@ -120,7 +120,7 @@ stage('Build & Deploy') {
     <server>
       <id>anypoint-exchange-v3</id>
       <username>~~~Client~~~</username>
-      <password>${CLIENT_ID_PLACEHOLDER}~?~${CLIENT_SECRET_PLACEHOLDER}</password>
+      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
     </server>
   </servers>
 </settings>
