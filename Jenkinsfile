@@ -114,11 +114,11 @@ stage('Build & Deploy') {
       <username>NEXUS_USER_PLACEHOLDER</username>
       <password>NEXUS_PWD_PLACEHOLDER</password>
     </server>
-    <server>
-      <id>anypoint-exchange-v3</id>
-      <username>CLIENT_ID_PLACEHOLDER</username>
-      <password>CLIENT_SECRET_PLACEHOLDER</password>
-    </server>
+	<server>
+	    <id>anypoint-exchange-v3</id>
+	    <username>~~~Client~~~</username>
+	    <password>${client.id}~?~${client.secret}</password>
+	</server>
   </servers>
 </settings>
 XMLEOF
