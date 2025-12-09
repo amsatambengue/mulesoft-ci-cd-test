@@ -117,7 +117,7 @@ stage('Build & Deploy') {
 	<server>
 	    <id>anypoint-exchange-v3</id>
 	    <username>~~~Client~~~</username>
-	    <password>${client.id}~?~${client.secret}</password>
+	    <password>${CLIENT_ID_PLACEHOLDER}~?~${CLIENT_SECRET_PLACEHOLDER}</password>
 	</server>
   </servers>
 </settings>
@@ -175,4 +175,4 @@ XMLEOF
       echo "Échec du pipeline."
     }
   }
-} 
+}
