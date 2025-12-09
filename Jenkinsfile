@@ -175,4 +175,4 @@ XMLEOF
       echo "Échec du pipeline."
     }
   }
-}
+} 
