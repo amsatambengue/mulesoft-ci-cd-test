@@ -95,7 +95,7 @@ pipeline {
 	  steps {
 	    script {
 	      def nexusCredId = 'nexus-releases'
-	      def anypointCredId = "anypoint_credential_${env.MULE_ENV}"
+	      def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
 	
 	      withCredentials([
 	        usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
