@@ -35,8 +35,8 @@ pipeline {
           }
           
           env.DEPLOY_ENV = deployEnv
-
           env.ACTIVE_PROFILES = "ci,${env.DEPLOY_ENV}"
+          
           echo "✅ Environnement DEPLOY_ENV : ${env.DEPLOY_ENV}"
           echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
         }
@@ -95,7 +95,7 @@ pipeline {
       }
     }
 
-stage('Build & Deploy') {
+  stage('Build & Deploy') {
   steps {
     script {
       def nexusCredId = 'nexus-releases'
@@ -168,7 +168,7 @@ XMLEOF
       }
       steps {
         echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${env.DEPLOY_ENV} -DskipTests"
+        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Denv=${env.DEPLOY_ENV} -DskipTests"
       }
     }
   }
