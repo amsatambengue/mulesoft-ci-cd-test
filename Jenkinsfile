@@ -8,7 +8,6 @@ pipeline {
 
   environment {
     ACTIVE_PROFILES = 'ci'
-    DEPLOY_ENV = ''
   }
 
   stages {
@@ -22,16 +21,20 @@ pipeline {
       steps {
         script {
 	      echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+	      
+	      def deployEnv = ''
 
           if (env.BRANCH_NAME == 'develop') {
-            	env.DEPLOY_ENV = 'development'
+            	deployEnv = 'development'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
-            	env.DEPLOY_ENV = 'test'
+            	deployEnv = 'test'
           } else if (env.BRANCH_NAME == 'main') {
-            	env.DEPLOY_ENV = 'production'
+            	deployEnv = 'production'
           } else {
             	error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
           }
+          
+          env.DEPLOY_ENV = deployEnv
 
           env.ACTIVE_PROFILES = "ci,${env.DEPLOY_ENV}"
           echo "✅ Environnement DEPLOY_ENV : ${env.DEPLOY_ENV}"
