@@ -20,21 +20,21 @@ pipeline {
     stage('Set Environment') {
       steps {
         script {
-          echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+          echo "📌 Branche détectée : ${BRANCH_NAME}"
 
-          if (env.BRANCH_NAME == 'develop') {
+          if (BRANCH_NAME == 'develop') {
             env = 'development'
-          } else if (env.BRANCH_NAME.startsWith('release/')) {
+          } else if (BRANCH_NAME.startsWith('release/')) {
             env = 'test'
-          } else if (env.BRANCH_NAME == 'main') {
+          } else if (BRANCH_NAME == 'main') {
             env = 'production'
           } else {
-            error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
+            error "❌ Branche non gérée pour déploiement CI/CD : ${BRANCH_NAME}"
           }
 
-          env.ACTIVE_PROFILES = "ci,${env}"
+          ACTIVE_PROFILES = "ci,${env}"
           echo "✅ Environnement --> "env" : ${env}"
-          echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
+          echo "✅ Profils Maven actifs : ${ACTIVE_PROFILES}"
           
         }
       }
@@ -42,7 +42,7 @@ pipeline {
 
     stage('Adjust Version') {
       when {
-        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
+        expression { return BRANCH_NAME.startsWith('release/') || BRANCH_NAME == 'main' }
       }
       steps {
         sh '''
@@ -141,13 +141,13 @@ XMLEOF
           sh """
             echo "CLIENT_ID: ${CLIENT_ID}"
             echo "Environnement: ${env}"
-            echo "Profils actifs: ${env.ACTIVE_PROFILES}"
+            echo "Profils actifs: ${ACTIVE_PROFILES}"
           """
 
           // Déploiement Maven
           sh """
             mvn clean deploy \
-              -P${env.ACTIVE_PROFILES} \
+              -P${ACTIVE_PROFILES} \
               -Denv=${env} \
               -Danypoint.client.id=${CLIENT_ID} \
               -Danypoint.client.secret=${CLIENT_SECRET} \
@@ -165,7 +165,7 @@ XMLEOF
       }
       steps {
         echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${env} -DskipTests"
+        sh "mvn deploy -P${ACTIVE_PROFILES} -Dmule.env=${env} -DskipTests"
       }
     }
   }
