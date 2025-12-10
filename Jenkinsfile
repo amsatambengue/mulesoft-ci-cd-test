@@ -21,13 +21,15 @@ pipeline {
     stage('Set Environment') {
       steps {
         script {
-          echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+          // Récupérer la branche
+	      def branch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+	      echo "📌 Branche détectée : ${branch}"
 
-          if (env.BRANCH_NAME == 'develop') {
+          if (branch == 'develop') {
             env.DEPLOY_ENV = 'development'
-          } else if (env.BRANCH_NAME.startsWith('release/')) {
+          } else if (branch.startsWith('release/')) {
             env.DEPLOY_ENV = 'test'
-          } else if (env.BRANCH_NAME == 'main') {
+          } else if (branch == 'main') {
             env.DEPLOY_ENV = 'production'
           } else {
             error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
