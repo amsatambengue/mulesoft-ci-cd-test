@@ -22,7 +22,7 @@ pipeline {
       steps {
         script {
           // Récupérer la branche
-	      def branch = ${env.BRANCH_NAME}.trim()
+	      def branch = ${env.BRANCH_NAME}
 	      echo "📌 Branche détectée : ${branch}"
 
           if (branch == 'develop') {
