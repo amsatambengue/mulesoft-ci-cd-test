@@ -148,7 +148,7 @@ XMLEOF
           sh """
             mvn clean deploy \
               -P${env.ACTIVE_PROFILES} \
-              -Dmule.env=${MULE_ENV} \
+              -Dmule.env=development \
               -Danypoint.client.id=${CLIENT_ID} \
               -Danypoint.client.secret=${CLIENT_SECRET} \
               -DmuleDeploy
