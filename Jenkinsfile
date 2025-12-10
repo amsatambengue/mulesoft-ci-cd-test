@@ -8,7 +8,7 @@ pipeline {
 
   environment {
     ACTIVE_PROFILES = 'ci'
-    DEPLOY_ENV = ''
+    DEPLOY_ENV = 'veveveveve'
   }
 
   stages {
@@ -24,7 +24,7 @@ pipeline {
           echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
           if (env.BRANCH_NAME == 'develop') {
-            env.DEPLOY_ENV = 'developmentttttttttttttt'
+            env.DEPLOY_ENV = 'development'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
             env.DEPLOY_ENV = 'test'
           } else if (env.BRANCH_NAME == 'main') {
