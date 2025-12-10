@@ -21,7 +21,7 @@ pipeline {
     stage('Set Environment') {
       steps {
         script {
-	      echo "📌 Branche détectée : ${${env.BRANCH_NAME}}"
+	      echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
           if (${env.BRANCH_NAME} == 'develop') {
             	env.DEPLOY_ENV = 'development'
@@ -30,7 +30,7 @@ pipeline {
           } else if (${env.BRANCH_NAME} == 'main') {
             	env.DEPLOY_ENV = 'production'
           } else {
-            	error "❌ Branche non gérée pour déploiement CI/CD : branch"
+            	error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
           }
 
           env.ACTIVE_PROFILES = "ci,${env.DEPLOY_ENV}"
