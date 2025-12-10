@@ -20,29 +20,28 @@ pipeline {
     stage('Set Environment') {
       steps {
         script {
-          echo "📌 Branche détectée : ${BRANCH_NAME}"
+          echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
-          if (BRANCH_NAME == 'develop') {
-            env = 'development'
-          } else if (BRANCH_NAME.startsWith('release/')) {
-            env = 'test'
-          } else if (BRANCH_NAME == 'main') {
-            env = 'production'
+          if (env.BRANCH_NAME == 'develop') {
+            env.MULE_ENV = 'devv'
+          } else if (env.BRANCH_NAME.startsWith('release/')) {
+            env.MULE_ENV = 'test'
+          } else if (env.BRANCH_NAME == 'main') {
+            env.MULE_ENV = 'prod'
           } else {
-            error "❌ Branche non gérée pour déploiement CI/CD : ${BRANCH_NAME}"
+            error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
           }
 
-          ACTIVE_PROFILES = "ci,${env}"
-          echo "✅ Environnement --> "env" : ${env}"
-          echo "✅ Profils Maven actifs : ${ACTIVE_PROFILES}"
-          
+          env.ACTIVE_PROFILES = "ci,${env.MULE_ENV}"
+          echo "✅ Environnement MULE_ENV : ${env.MULE_ENV}"
+          echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
         }
       }
     }
 
     stage('Adjust Version') {
       when {
-        expression { return BRANCH_NAME.startsWith('release/') || BRANCH_NAME == 'main' }
+        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
       }
       steps {
         sh '''
@@ -56,7 +55,7 @@ pipeline {
     stage('Test Anypoint Auth') {
       steps {
         script {
-          def anypointCredId = "anypoint-connected-app-development}"
+          def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
           
           withCredentials([
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
@@ -96,7 +95,7 @@ stage('Build & Deploy') {
   steps {
     script {
       def nexusCredId = 'nexus-releases'
-      def anypointCredId = "anypoint-connected-app-development"
+      def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
 
       withCredentials([
         usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
@@ -140,15 +139,15 @@ XMLEOF
           // Logs de debug
           sh """
             echo "CLIENT_ID: ${CLIENT_ID}"
-            echo "Environnement: ${env}"
-            echo "Profils actifs: ${ACTIVE_PROFILES}"
+            echo "Environnement: ${env.MULE_ENV}"
+            echo "Profils actifs: ${env.ACTIVE_PROFILES}"
           """
 
           // Déploiement Maven
           sh """
             mvn clean deploy \
-              -P${ACTIVE_PROFILES} \
-              -Denv=${env} \
+              -P${env.ACTIVE_PROFILES} \
+              -Dmule.env=${env.MULE_ENV} \
               -Danypoint.client.id=${CLIENT_ID} \
               -Danypoint.client.secret=${CLIENT_SECRET} \
               -DmuleDeploy
@@ -165,7 +164,7 @@ XMLEOF
       }
       steps {
         echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-        sh "mvn deploy -P${ACTIVE_PROFILES} -Dmule.env=${env} -DskipTests"
+        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${env.MULE_ENV} -DskipTests"
       }
     }
   }
