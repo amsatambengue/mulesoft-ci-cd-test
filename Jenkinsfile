@@ -22,7 +22,7 @@ pipeline {
       steps {
         script {
           // Récupérer la branche
-	      def branch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+	      def branch = ${env.BRANCH_NAME}.trim()
 	      echo "📌 Branche détectée : ${branch}"
 
           if (branch == 'develop') {
@@ -32,7 +32,7 @@ pipeline {
           } else if (branch == 'main') {
             env.DEPLOY_ENV = 'production'
           } else {
-            error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
+            error "❌ Branche non gérée pour déploiement CI/CD : branch"
           }
 
           env.ACTIVE_PROFILES = "ci,${env.DEPLOY_ENV}"
