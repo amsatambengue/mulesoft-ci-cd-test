@@ -21,16 +21,16 @@ pipeline {
     stage('Set Environment') {
       steps {
         script {
-	      echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+          echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
-          if (${env.BRANCH_NAME} == 'develop') {
-            	env.DEPLOY_ENV = 'development'
-          } else if (${env.BRANCH_NAME}.startsWith('release/')) {
-            	env.DEPLOY_ENV = 'test'
-          } else if (${env.BRANCH_NAME} == 'main') {
-            	env.DEPLOY_ENV = 'production'
+          if (env.BRANCH_NAME == 'develop') {
+            env.DEPLOY_ENV = 'development'
+          } else if (env.BRANCH_NAME.startsWith('release/')) {
+            env.DEPLOY_ENV = 'test'
+          } else if (env.BRANCH_NAME == 'main') {
+            env.DEPLOY_ENV = 'production'
           } else {
-            	error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
+            error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
           }
 
           env.ACTIVE_PROFILES = "ci,${env.DEPLOY_ENV}"
