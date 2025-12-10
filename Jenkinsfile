@@ -8,7 +8,7 @@ pipeline {
 
   environment {
     ACTIVE_PROFILES = 'ci'
-    MULE_ENV
+    MULE_ENV = 'development'
   }
 
   stages {
