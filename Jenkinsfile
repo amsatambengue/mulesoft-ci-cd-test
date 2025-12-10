@@ -8,7 +8,7 @@ pipeline {
 
   environment {
     ACTIVE_PROFILES = 'ci'
-    DEPLOY_ENV = 'veveveveve'
+    env.DEPLOY_ENV = ''
   }
 
   stages {
