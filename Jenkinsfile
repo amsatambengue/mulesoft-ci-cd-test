@@ -56,7 +56,7 @@ pipeline {
     stage('Test Anypoint Auth') {
       steps {
         script {
-          def anypointCredId = "connected-app-${MULE_ENV}"
+          def anypointCredId = "anypoint-connected-app-${MULE_ENV}"
           
           withCredentials([
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
@@ -96,7 +96,7 @@ stage('Build & Deploy') {
   steps {
     script {
       def nexusCredId = 'nexus-releases'
-      def anypointCredId = "connected-app-${MULE_ENV}"
+      def anypointCredId = "anypoint-connected-app-${MULE_ENV}"
 
       withCredentials([
         usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
