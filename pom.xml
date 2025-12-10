@@ -4,14 +4,13 @@
 
 	<groupId>98add779-6666-4151-9c95-f088b9522ec0</groupId>
 	<artifactId>mule-ci-cd</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 	
 	<name>mule-ci-cd-${env}</name>
 
 	<properties>	
-	    <app.name>${project.artifactId}-${env}</app.name>
-	    	
+		<app.name>${project.artifactId}-${env}</app.name>	    	
 		<!-- env par défaut -->
 		<env>dev</env>
 		
@@ -145,7 +144,7 @@
 					</execution>
 				</executions>
 				<configuration>
-				    <!-- Lien avec ton profil ci -->
+				    <!-- Lien avec profil ci -->
     				<skipMunitTests>${munit.skip}</skipMunitTests>
 					<coverage>
 						<runCoverage>true</runCoverage>

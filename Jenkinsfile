@@ -23,18 +23,19 @@ pipeline {
           echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
           if (env.BRANCH_NAME == 'develop') {
-            env.MULE_ENV = 'devv'
+            env = 'development'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
-            env.MULE_ENV = 'test'
+            env = 'test'
           } else if (env.BRANCH_NAME == 'main') {
-            env.MULE_ENV = 'prod'
+            env = 'production'
           } else {
             error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
           }
 
-          env.ACTIVE_PROFILES = "ci,${env.MULE_ENV}"
-          echo "✅ Environnement MULE_ENV : ${env.MULE_ENV}"
+          env.ACTIVE_PROFILES = "ci,${env}"
+          echo "✅ Environnement --> "env" : ${env}"
           echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
+          
         }
       }
     }
@@ -55,7 +56,7 @@ pipeline {
     stage('Test Anypoint Auth') {
       steps {
         script {
-          def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
+          def anypointCredId = "anypoint-connected-app-development}"
           
           withCredentials([
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
@@ -95,7 +96,7 @@ stage('Build & Deploy') {
   steps {
     script {
       def nexusCredId = 'nexus-releases'
-      def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
+      def anypointCredId = "anypoint-connected-app-development"
 
       withCredentials([
         usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
@@ -139,7 +140,7 @@ XMLEOF
           // Logs de debug
           sh """
             echo "CLIENT_ID: ${CLIENT_ID}"
-            echo "Environnement: ${env.MULE_ENV}"
+            echo "Environnement: ${env}"
             echo "Profils actifs: ${env.ACTIVE_PROFILES}"
           """
 
@@ -147,7 +148,7 @@ XMLEOF
           sh """
             mvn clean deploy \
               -P${env.ACTIVE_PROFILES} \
-              -Dmule.env=${env.MULE_ENV} \
+              -Denv=${env} \
               -Danypoint.client.id=${CLIENT_ID} \
               -Danypoint.client.secret=${CLIENT_SECRET} \
               -DmuleDeploy
@@ -164,7 +165,7 @@ XMLEOF
       }
       steps {
         echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${env.MULE_ENV} -DskipTests"
+        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${env} -DskipTests"
       }
     }
   }
