@@ -151,7 +151,7 @@ XMLEOF
               -Danypoint.client.secret=${CLIENT_SECRET} \
               -DmuleDeploy \
               -P${env.ACTIVE_PROFILES} \
-              -Dmule.env=${env.MULE_ENV}
+              -Denv=${env.MULE_ENV}
           """
         }
       }
