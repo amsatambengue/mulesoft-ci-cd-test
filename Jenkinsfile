@@ -23,11 +23,11 @@ pipeline {
           echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
           if (env.BRANCH_NAME == 'develop') {
-            MULE_ENV = 'development'
+            env.MULE_ENV = 'development'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
-            MULE_ENV = 'test'
+            env.MULE_ENV = 'test'
           } else if (env.BRANCH_NAME == 'main') {
-            MULE_ENV = 'production'
+            env.MULE_ENV = 'production'
           } else {
             error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
           }
