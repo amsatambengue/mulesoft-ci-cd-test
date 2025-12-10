@@ -103,7 +103,7 @@ pipeline {
       def mavenSettingsId
 
 	// Choix dynamique du settings.xml selon l'env (tu crées 3 fichiers dans Jenkins)
-	if (env.DEPLOY_ENV == 'development') {
+      if (env.BRANCH_NAME == 'develop') {
 	  mavenSettingsId = 'maven-settings-dev'
 	} else if (env.DEPLOY_ENV == 'test') {
 	  mavenSettingsId = 'maven-settings-test'
