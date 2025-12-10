@@ -32,8 +32,8 @@ pipeline {
             error "❌ Branche non gérée pour déploiement CI/CD : ${env.BRANCH_NAME}"
           }
 
-          env.ACTIVE_PROFILES = "ci,${MULE_ENV}"
-          echo "✅ Environnement MULE_ENV : ${MULE_ENV}"
+          env.ACTIVE_PROFILES = "ci,${env.MULE_ENV}"
+          echo "✅ Environnement MULE_ENV : ${env.MULE_ENV}"
           echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
         }
       }
@@ -55,7 +55,7 @@ pipeline {
     stage('Test Anypoint Auth') {
       steps {
         script {
-          def anypointCredId = "anypoint-connected-app-${MULE_ENV}"
+          def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
           
           withCredentials([
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
@@ -95,7 +95,7 @@ stage('Build & Deploy') {
   steps {
     script {
       def nexusCredId = 'nexus-releases'
-      def anypointCredId = "anypoint-connected-app-${MULE_ENV}"
+      def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
 
       withCredentials([
         usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
@@ -139,7 +139,7 @@ XMLEOF
           // Logs de debug
           sh """
             echo "CLIENT_ID: ${CLIENT_ID}"
-            echo "Environnement: ${MULE_ENV}"
+            echo "Environnement: ${env.MULE_ENV}"
             echo "Profils actifs: ${env.ACTIVE_PROFILES}"
           """
 
@@ -150,7 +150,7 @@ XMLEOF
               -Danypoint.client.secret=${CLIENT_SECRET} \
               -DmuleDeploy \
               -P${env.ACTIVE_PROFILES} \
-              -Dmule.env=${MULE_ENV}
+              -Dmule.env=${env.MULE_ENV}
           """
         }
       }
@@ -164,7 +164,7 @@ XMLEOF
       }
       steps {
         echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${MULE_ENV} -DskipTests"
+        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Dmule.env=${env.MULE_ENV} -DskipTests"
       }
     }
   }
