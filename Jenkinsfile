@@ -23,7 +23,7 @@ pipeline {
           echo "📌 Branche détectée : ${env.BRANCH_NAME}"
 
           if (env.BRANCH_NAME == 'develop') {
-            env.MULE_ENV = 'dev'
+            env.MULE_ENV = 'devv'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
             env.MULE_ENV = 'test'
           } else if (env.BRANCH_NAME == 'main') {
@@ -52,44 +52,44 @@ pipeline {
       }
     }
 
-	stage('Test Anypoint Auth') {
-	  steps {
-	    script {
-	      def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
-	      
-	      withCredentials([
-	        usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
-	      ]) {
-	        sh '''
-	        echo "🔐 Test d'authentification Anypoint..."
-	        
-	        RESPONSE=$(curl -s -w "\\n%{http_code}" -X POST \
-	          https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token \
-	          -H "Content-Type: application/json" \
-	          -d "{
-	            \\"grant_type\\": \\"client_credentials\\",
-	            \\"client_id\\": \\"$TEST_CLIENT_ID\\",
-	            \\"client_secret\\": \\"$TEST_CLIENT_SECRET\\"
-	          }")
-	        
-	        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-	        BODY=$(echo "$RESPONSE" | head -n-1)
-	        
-	        echo "HTTP Status: $HTTP_CODE"
-	        
-	        if [ "$HTTP_CODE" = "200" ]; then
-	          echo "✅ Authentification réussie!"
-	          echo "$BODY" | grep -o '"access_token":"[^"]*"' | head -c 80
-	        else
-	          echo "❌ Échec d'authentification!"
-	          echo "$BODY"
-	          exit 1
-	        fi
-	        '''
-	      }
-	    }
-	  }
-	}
+    stage('Test Anypoint Auth') {
+      steps {
+        script {
+          def anypointCredId = "anypoint-connected-app-${env.MULE_ENV}"
+          
+          withCredentials([
+            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
+          ]) {
+            sh '''
+            echo "🔐 Test d'authentification Anypoint..."
+            
+            RESPONSE=$(curl -s -w "\\n%{http_code}" -X POST \
+              https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token \
+              -H "Content-Type: application/json" \
+              -d "{
+                \\"grant_type\\": \\"client_credentials\\",
+                \\"client_id\\": \\"$TEST_CLIENT_ID\\",
+                \\"client_secret\\": \\"$TEST_CLIENT_SECRET\\"
+              }")
+            
+            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+            BODY=$(echo "$RESPONSE" | head -n-1)
+            
+            echo "HTTP Status: $HTTP_CODE"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Authentification réussie!"
+              echo "$BODY" | grep -o '"access_token":"[^"]*"' | head -c 80
+            else
+              echo "❌ Échec d'authentification!"
+              echo "$BODY"
+              exit 1
+            fi
+            '''
+          }
+        }
+      }
+    }
 
 stage('Build & Deploy') {
   steps {
@@ -150,8 +150,7 @@ XMLEOF
               -Dmule.env=${env.MULE_ENV} \
               -Danypoint.client.id=${CLIENT_ID} \
               -Danypoint.client.secret=${CLIENT_SECRET} \
-              -DmuleDeploy \
-              -DskipTests
+              -DmuleDeploy
           """
         }
       }
