@@ -8,7 +8,6 @@ pipeline {
 
   environment {
     ACTIVE_PROFILES = 'ci'
-    MULE_ENV = 'development'
   }
 
   stages {
@@ -147,11 +146,11 @@ XMLEOF
           // Déploiement Maven
           sh """
             mvn clean deploy \
-              -P${env.ACTIVE_PROFILES} \
-              -Dmule.env=development \
               -Danypoint.client.id=${CLIENT_ID} \
               -Danypoint.client.secret=${CLIENT_SECRET} \
-              -DmuleDeploy
+              -DmuleDeploy \
+              -P${env.ACTIVE_PROFILES} \
+              -Dmule.env=${MULE_ENV}
           """
         }
       }
