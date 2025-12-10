@@ -100,46 +100,27 @@ pipeline {
     script {
       def nexusCredId = 'nexus-releases'
       def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+      def mavenSettingsId
+
+	// Choix dynamique du settings.xml selon l'env (tu crées 3 fichiers dans Jenkins)
+	if (env.DEPLOY_ENV == 'development') {
+	  mavenSettingsId = 'maven-settings-dev'
+	} else if (env.DEPLOY_ENV == 'test') {
+	  mavenSettingsId = 'maven-settings-test'
+	} else if (env.DEPLOY_ENV == 'production') {
+	  mavenSettingsId = 'maven-settings-prod'
+	}
 
       withCredentials([
         usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
         usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
       ]) {
-        withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
-          
-          // Créer settings.xml
-          sh '''
-            mkdir -p ~/.m2
-            cat > ~/.m2/settings.xml <<'XMLEOF'
-<settings>
-  <pluginGroups>
-    <pluginGroup>org.mule.tools</pluginGroup>
-  </pluginGroups>
-  <servers>
-    <server>
-      <id>nexus-releases</id>
-      <username>NEXUS_USER_PLACEHOLDER</username>
-      <password>NEXUS_PWD_PLACEHOLDER</password>
-    </server>
-    <server>
-      <id>anypoint-exchange-v3</id>
-      <username>~~~Client~~~</username>
-      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
-    </server>
-  </servers>
-</settings>
-XMLEOF
-
-            # Remplacer les placeholders
-            sed -i "s|NEXUS_USER_PLACEHOLDER|${NEXUS_USER}|g" ~/.m2/settings.xml
-            sed -i "s|NEXUS_PWD_PLACEHOLDER|${NEXUS_PWD}|g" ~/.m2/settings.xml
-            sed -i "s|CLIENT_ID_PLACEHOLDER|${CLIENT_ID}|g" ~/.m2/settings.xml
-            sed -i "s|CLIENT_SECRET_PLACEHOLDER|${CLIENT_SECRET}|g" ~/.m2/settings.xml
-
-            echo "✅ settings.xml créé"
-            cat ~/.m2/settings.xml
-          '''
-
+        withMaven(
+        maven: 'maven-3.8.8',
+        mavenSettingsConfig: mavenSettingsId,  // Ici l'injection magique ! 
+        publisherStrategy: 'EXPLICIT'
+        ) {
+             
           // Logs de debug
           sh """
             echo "CLIENT_ID: ${CLIENT_ID}"
