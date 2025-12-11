@@ -17,31 +17,66 @@ pipeline {
       }
     }
 
-    stage('Set Environment') {
-      steps {
+stage('Set Environment') {
+    steps {
         script {
-        echo "📌 Branche détectée : ${env.BRANCH_NAME}"
-        
-        def deployEnv = ''
-
-          if (env.BRANCH_NAME == 'develop') {
-              deployEnv = 'development'
-          } else if (env.BRANCH_NAME.startsWith('release/')) {
-              deployEnv = 'test'
-          } else if (env.BRANCH_NAME == 'main') {
-              deployEnv = 'production'
-          } else {
-              error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
-          }
-          
-          env.DEPLOY_ENV = deployEnv
-          env.ACTIVE_PROFILES = "ci,${env.DEPLOY_ENV}"
-          
-          echo "✅ Environnement DEPLOY_ENV : ${env.DEPLOY_ENV}"
-          echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
+            echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+            
+            // Configuration par environnement (approche Map - plus maintenable)
+            def envConfig = [
+                'develop': [
+                    deployEnv: 'development',
+                    sizingProfile: 'dev-sizing',
+                    mavenSettings: 'maven-settings-dev'
+                ],
+                'release': [
+                    deployEnv: 'test',
+                    sizingProfile: 'test-sizing',
+                    mavenSettings: 'maven-settings-test'
+                ],
+                'main': [
+                    deployEnv: 'production',
+                    sizingProfile: 'prod-sizing',
+                    mavenSettings: 'maven-settings-prod'
+                ]
+            ]
+            
+            // Déterminer la clé de configuration
+            def configKey = ''
+            if (env.BRANCH_NAME == 'develop') {
+                configKey = 'develop'
+            } else if (env.BRANCH_NAME.startsWith('release/')) {
+                configKey = 'release'
+            } else if (env.BRANCH_NAME == 'main') {
+                configKey = 'main'
+            } else {
+                error "❌ Branche [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
+            }
+            
+            // Récupérer la configuration
+            def config = envConfig[configKey]
+            
+            // Assigner aux variables d'environnement
+            env.DEPLOY_ENV = config.deployEnv
+            env.SIZING_PROFILE = config.sizingProfile
+            //env.MAVEN_SETTINGS = config.mavenSettings
+            env.ACTIVE_PROFILES = "ci,${config.sizingProfile}"
+            
+            // Affichage des informations
+            echo """
+            ════════════════════════════════════════════════════════════
+            📌 Configuration du Pipeline
+            ════════════════════════════════════════════════════════════
+            🌿 Branche               : ${env.BRANCH_NAME}
+            🌍 Environnement         : ${env.DEPLOY_ENV}
+            📦 Sizing Profile        : ${env.SIZING_PROFILE}
+            📋 Maven Settings        : ${env.MAVEN_SETTINGS}
+            🔧 Profils Maven actifs  : ${env.ACTIVE_PROFILES}
+            ════════════════════════════════════════════════════════════
+            """
         }
-      }
     }
+}
 
     stage('Adjust Version') {
       when {
@@ -129,23 +164,10 @@ pipeline {
   </servers>
 </settings>
 XMLEOF
-
-            # Remplacer les placeholders
-            sed -i "s|NEXUS_USER_PLACEHOLDER|${NEXUS_USER}|g" ~/.m2/settings.xml
-            sed -i "s|NEXUS_PWD_PLACEHOLDER|${NEXUS_PWD}|g" ~/.m2/settings.xml
-            sed -i "s|CLIENT_ID_PLACEHOLDER|${CLIENT_ID}|g" ~/.m2/settings.xml
-            sed -i "s|CLIENT_SECRET_PLACEHOLDER|${CLIENT_SECRET}|g" ~/.m2/settings.xml
-
             echo "✅ settings.xml créé"
             cat ~/.m2/settings.xml
           '''
 
-          // Logs de debug
-          sh """
-            echo "CLIENT_ID: ${CLIENT_ID}"
-            echo "Environnement: ${env.DEPLOY_ENV}"
-            echo "Profils actifs: ${env.ACTIVE_PROFILES}"
-          """
 
           // Déploiement Maven
           sh """
