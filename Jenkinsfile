@@ -20,18 +20,18 @@ pipeline {
     stage('Set Environment') {
       steps {
         script {
-	      echo "📌 Branche détectée : ${env.BRANCH_NAME}"
-	      
-	      def deployEnv = ''
+        echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+        
+        def deployEnv = ''
 
           if (env.BRANCH_NAME == 'develop') {
-            	deployEnv = 'development'
+              deployEnv = 'development'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
-            	deployEnv = 'test'
+              deployEnv = 'test'
           } else if (env.BRANCH_NAME == 'main') {
-            	deployEnv = 'production'
+              deployEnv = 'production'
           } else {
-            	error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
+              error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
           }
           
           env.DEPLOY_ENV = deployEnv
@@ -39,6 +39,15 @@ pipeline {
           
           echo "✅ Environnement DEPLOY_ENV : ${env.DEPLOY_ENV}"
           echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
+          echo """
+          ════════════════════════════════════════════════════════════
+          📌 Configuration du Pipeline
+          ════════════════════════════════════════════════════════════
+          🌿 Branche            : ${env.BRANCH_NAME}
+          🌍 Environnement      : ${env.DEPLOY_ENV}
+          🔧 Profils Maven      : ${env.ACTIVE_PROFILES}
+          ════════════════════════════════════════════════════════════
+          """ 
         }
       }
     }
@@ -100,30 +109,46 @@ pipeline {
     script {
       def nexusCredId = 'nexus-releases'
       def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
-      def mavenSettingsId = 'maven-settings-dev'
-
-		// Choix dynamique du settings.xml selon l'env (tu crées 3 fichiers dans Jenkins)
-	      if (env.BRANCH_NAME == 'develop') {
-		  mavenSettingsId = 'maven-settings-dev'
-		} else if (env.DEPLOY_ENV == 'test') {
-		  mavenSettingsId = 'maven-settings-test'
-		} else if (env.DEPLOY_ENV == 'production') {
-		  mavenSettingsId = 'maven-settings-prod'
-		}
-
-      echo "✅ Applied Maven Settings:  ${mavenSettingsId}"
-
 
       withCredentials([
         usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
         usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
       ]) {
-        withMaven(
-        maven: 'maven-3.8.8',
-        mavenSettingsConfig: mavenSettingsId,  // Ici l'injection magique ! 
-        publisherStrategy: 'EXPLICIT'
-        ) {
-             
+        withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
+          
+          // Créer settings.xml
+          sh '''
+            mkdir -p ~/.m2
+            cat > ~/.m2/settings.xml <<'XMLEOF'
+<settings>
+  <pluginGroups>
+    <pluginGroup>org.mule.tools</pluginGroup>
+  </pluginGroups>
+  <servers>
+    <server>
+      <id>nexus-releases</id>
+      <username>NEXUS_USER_PLACEHOLDER</username>
+      <password>NEXUS_PWD_PLACEHOLDER</password>
+    </server>
+    <server>
+      <id>anypoint-exchange-v3</id>
+      <username>~~~Client~~~</username>
+      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+    </server>
+  </servers>
+</settings>
+XMLEOF
+
+            # Remplacer les placeholders
+            sed -i "s|NEXUS_USER_PLACEHOLDER|${NEXUS_USER}|g" ~/.m2/settings.xml
+            sed -i "s|NEXUS_PWD_PLACEHOLDER|${NEXUS_PWD}|g" ~/.m2/settings.xml
+            sed -i "s|CLIENT_ID_PLACEHOLDER|${CLIENT_ID}|g" ~/.m2/settings.xml
+            sed -i "s|CLIENT_SECRET_PLACEHOLDER|${CLIENT_SECRET}|g" ~/.m2/settings.xml
+
+            echo "✅ settings.xml créé"
+            cat ~/.m2/settings.xml
+          '''
+
           // Logs de debug
           sh """
             echo "CLIENT_ID: ${CLIENT_ID}"
@@ -158,11 +183,27 @@ pipeline {
   }
 
   post {
-    success {
-      echo "Pipeline CI/CD MuleSoft terminé avec succès."
-    }
-    failure {
-      echo "Échec du pipeline."
-    }
+      success {
+          echo """
+          ════════════════════════════════════════════════════════════
+          ✅ PIPELINE TERMINÉ AVEC SUCCÈS
+          ════════════════════════════════════════════════════════════
+          📦 Application déployée sur : ${env.DEPLOY_ENV}
+          🌿 Branche                   : ${env.BRANCH_NAME}
+          ════════════════════════════════════════════════════════════
+          """
+      }
+      failure {
+          echo """
+          ════════════════════════════════════════════════════════════
+          ❌ PIPELINE ÉCHOUÉ
+          ════════════════════════════════════════════════════════════
+          Consultez les logs ci-dessus pour plus de détails.
+          ════════════════════════════════════════════════════════════
+          """
+      }
+      always {
+          cleanWs()
+      }
   }
 }
