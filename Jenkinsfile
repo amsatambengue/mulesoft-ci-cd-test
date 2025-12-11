@@ -39,15 +39,6 @@ pipeline {
           
           echo "✅ Environnement DEPLOY_ENV : ${env.DEPLOY_ENV}"
           echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
-          echo """
-          ════════════════════════════════════════════════════════════
-          📌 Configuration du Pipeline
-          ════════════════════════════════════════════════════════════
-          🌿 Branche            : ${env.BRANCH_NAME}
-          🌍 Environnement      : ${env.DEPLOY_ENV}
-          🔧 Profils Maven      : ${env.ACTIVE_PROFILES}
-          ════════════════════════════════════════════════════════════
-          """ 
         }
       }
     }
@@ -104,30 +95,71 @@ pipeline {
       }
     }
 
-stage('Build & Deploy') {
-    steps {
-        script {
-            def nexusCredId = 'nexus-releases'
-            def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+  stage('Build & Deploy') {
+  steps {
+    script {
+      def nexusCredId = 'nexus-releases'
+      def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
 
-            withCredentials([
-                usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
-                usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
-            ]) {
-                configFileProvider([configFile(fileId: 'maven-settings-dev', variable: 'MAVEN_SETTINGS')]) {
-                    sh """
-                        mvn clean deploy \
-                          -s \${MAVEN_SETTINGS} \
-                          -Danypoint.client.id=${CLIENT_ID} \
-                          -Danypoint.client.secret=${CLIENT_SECRET} \
-                          -DmuleDeploy \
-                          -P${env.ACTIVE_PROFILES} \
-                          -Denv=${env.DEPLOY_ENV}
-                    """
-                }
-            }
+      withCredentials([
+        usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
+        usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+      ]) {
+        withMaven(maven: 'maven-3.8.8', publisherStrategy: 'EXPLICIT') {
+          
+          // Créer settings.xml
+          sh '''
+            mkdir -p ~/.m2
+            cat > ~/.m2/settings.xml <<'XMLEOF'
+<settings>
+  <pluginGroups>
+    <pluginGroup>org.mule.tools</pluginGroup>
+  </pluginGroups>
+  <servers>
+    <server>
+      <id>nexus-releases</id>
+      <username>NEXUS_USER_PLACEHOLDER</username>
+      <password>NEXUS_PWD_PLACEHOLDER</password>
+    </server>
+    <server>
+      <id>anypoint-exchange-v3</id>
+      <username>~~~Client~~~</username>
+      <password>${CLIENT_ID}~?~${CLIENT_SECRET}</password>
+    </server>
+  </servers>
+</settings>
+XMLEOF
+
+            # Remplacer les placeholders
+            sed -i "s|NEXUS_USER_PLACEHOLDER|${NEXUS_USER}|g" ~/.m2/settings.xml
+            sed -i "s|NEXUS_PWD_PLACEHOLDER|${NEXUS_PWD}|g" ~/.m2/settings.xml
+            sed -i "s|CLIENT_ID_PLACEHOLDER|${CLIENT_ID}|g" ~/.m2/settings.xml
+            sed -i "s|CLIENT_SECRET_PLACEHOLDER|${CLIENT_SECRET}|g" ~/.m2/settings.xml
+
+            echo "✅ settings.xml créé"
+            cat ~/.m2/settings.xml
+          '''
+
+          // Logs de debug
+          sh """
+            echo "CLIENT_ID: ${CLIENT_ID}"
+            echo "Environnement: ${env.DEPLOY_ENV}"
+            echo "Profils actifs: ${env.ACTIVE_PROFILES}"
+          """
+
+          // Déploiement Maven
+          sh """
+            mvn clean deploy \
+              -Danypoint.client.id=${CLIENT_ID} \
+              -Danypoint.client.secret=${CLIENT_SECRET} \
+              -DmuleDeploy \
+              -P${env.ACTIVE_PROFILES} \
+              -Denv=${env.DEPLOY_ENV}
+          """
         }
+      }
     }
+  }
 }
 
     stage('Promote to Prod') {
@@ -142,27 +174,11 @@ stage('Build & Deploy') {
   }
 
   post {
-      success {
-          echo """
-          ════════════════════════════════════════════════════════════
-          ✅ PIPELINE TERMINÉ AVEC SUCCÈS
-          ════════════════════════════════════════════════════════════
-          📦 Application déployée sur : ${env.DEPLOY_ENV}
-          🌿 Branche                   : ${env.BRANCH_NAME}
-          ════════════════════════════════════════════════════════════
-          """
-      }
-      failure {
-          echo """
-          ════════════════════════════════════════════════════════════
-          ❌ PIPELINE ÉCHOUÉ
-          ════════════════════════════════════════════════════════════
-          Consultez les logs ci-dessus pour plus de détails.
-          ════════════════════════════════════════════════════════════
-          """
-      }
-      always {
-          cleanWs()
-      }
+    success {
+      echo "Pipeline CI/CD MuleSoft terminé avec succès."
+    }
+    failure {
+      echo "Échec du pipeline."
+    }
   }
 }
