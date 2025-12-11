@@ -104,6 +104,18 @@ pipeline {
       }
     }
 
+
+    
+    stage('Promote to Prod') {
+      when {
+        branch 'main'
+      }
+      steps {
+        echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
+        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Denv=${env.DEPLOY_ENV} -DskipTests"
+      }
+    }
+
 stage('Build & Deploy') {
     steps {
         script {
@@ -127,17 +139,6 @@ stage('Build & Deploy') {
                 }
             }
         }
-    }
-}
-
-    stage('Promote to Prod') {
-      when {
-        branch 'main'
-      }
-      steps {
-        echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Denv=${env.DEPLOY_ENV} -DskipTests"
-      }
     }
   }
 
@@ -165,4 +166,5 @@ stage('Build & Deploy') {
           cleanWs()
       }
   }
-}}
+
+}
