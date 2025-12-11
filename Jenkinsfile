@@ -23,13 +23,17 @@ pipeline {
         echo "📌 Branche détectée : ${env.BRANCH_NAME}"
         
         def deployEnv = ''
+        def mavenSettings = ''
 
           if (env.BRANCH_NAME == 'develop') {
               deployEnv = 'development'
+              mavenSettings = 'maven-settings-dev'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
               deployEnv = 'test'
+              mavenSettings = 'maven-settings-test'
           } else if (env.BRANCH_NAME == 'main') {
               deployEnv = 'production'
+              mavenSettings = 'maven-settings-prod'
           } else {
               error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
           }
@@ -114,7 +118,7 @@ stage('Build & Deploy') {
                 usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
                 usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
             ]) {
-                configFileProvider([configFile(fileId: 'maven-settings-dev', variable: 'MAVEN_SETTINGS')]) {
+                configFileProvider([configFile(fileId: mavenSettings, variable: 'MAVEN_SETTINGS')]) {
                     sh """
                         mvn clean deploy \
                           -s \${MAVEN_SETTINGS} \
