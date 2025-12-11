@@ -27,19 +27,25 @@ pipeline {
 
           if (env.BRANCH_NAME == 'develop') {
               deployEnv = 'development'
+              sizingProfile = 'dev-sizing'
               mavenSettings = 'maven-settings-dev'
           } else if (env.BRANCH_NAME.startsWith('release/')) {
               deployEnv = 'test'
+              sizingProfile = 'test-sizing'
               mavenSettings = 'maven-settings-test'
           } else if (env.BRANCH_NAME == 'main') {
               deployEnv = 'production'
+              sizingProfile = 'prod-sizing'
               mavenSettings = 'maven-settings-prod'
           } else {
               error "❌ Branche ---> [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
           }
           
           env.DEPLOY_ENV = deployEnv
-          env.ACTIVE_PROFILES = "ci,${env.DEPLOY_ENV}"
+          env.SIZING_PROFILE = sizingProfile
+          env.MAVEN_SETTINGS = mavenSettings
+
+          env.ACTIVE_PROFILES = "ci,${env.SIZING_PROFILE}"
           
           echo "✅ Environnement DEPLOY_ENV : ${env.DEPLOY_ENV}"
           echo "✅ Profils Maven actifs : ${env.ACTIVE_PROFILES}"
