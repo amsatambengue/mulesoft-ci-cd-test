@@ -100,7 +100,7 @@ pipeline {
     script {
       def nexusCredId = 'nexus-releases'
       def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
-      def mavenSettingsId
+      def mavenSettingsId = 'maven-settings-dev'
 
 		// Choix dynamique du settings.xml selon l'env (tu crées 3 fichiers dans Jenkins)
 	      if (env.BRANCH_NAME == 'develop') {
