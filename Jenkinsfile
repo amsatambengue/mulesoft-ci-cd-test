@@ -133,77 +133,48 @@ stage('Set Environment') {
 	stage('Build & Deploy') {
 	    steps {
 	        script {
-	            // Définition des credentials
 	            def nexusCredId = 'nexus-releases'
 	            def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
 	            
-	            echo """
-	            ════════════════════════════════════════════════════════════
-	            🚀 Démarrage du Build & Deploy
-	            ════════════════════════════════════════════════════════════
-	            🔑 Nexus Credential      : ${nexusCredId}
-	            🔑 Anypoint Credential   : ${anypointCredId}
-	            📋 Maven Settings        : ${env.MAVEN_SETTINGS}
-	            🌍 Environnement cible   : ${env.DEPLOY_ENV}
-	            🔧 Profils Maven         : ${env.ACTIVE_PROFILES}
-	            ════════════════════════════════════════════════════════════
-	            """
-	            
-	            // Validation des variables requises
-	            if (!env.DEPLOY_ENV || !env.MAVEN_SETTINGS || !env.ACTIVE_PROFILES) {
-	                error "❌ Variables d'environnement manquantes. Assurez-vous que le stage 'Set Environment' a été exécuté."
-	            }
-	            
-	            try {
-	                withCredentials([
-	                    usernamePassword(
-	                        credentialsId: nexusCredId, 
-	                        usernameVariable: 'NEXUS_USER', 
-	                        passwordVariable: 'NEXUS_PWD'
-	                    ),
-	                    usernamePassword(
-	                        credentialsId: anypointCredId, 
-	                        usernameVariable: 'CLIENT_ID', 
-	                        passwordVariable: 'CLIENT_SECRET'
+	            withCredentials([
+	                usernamePassword(
+	                    credentialsId: nexusCredId, 
+	                    usernameVariable: 'NEXUS_USER',      // ✅ Correspond à ${NEXUS_USER}
+	                    passwordVariable: 'NEXUS_PWD'        // ✅ Correspond à ${NEXUS_PWD}
+	                ),
+	                usernamePassword(
+	                    credentialsId: anypointCredId, 
+	                    usernameVariable: 'CLIENT_ID',       // ✅ Correspond à ${CLIENT_ID}
+	                    passwordVariable: 'CLIENT_SECRET'    // ✅ Correspond à ${CLIENT_SECRET}
+	                )
+	            ]) {
+	                configFileProvider([
+	                    configFile(
+	                        fileId: env.MAVEN_SETTINGS,
+	                        variable: 'MAVEN_SETTINGS_FILE'
 	                    )
 	                ]) {
-	                    // Utiliser env.MAVEN_SETTINGS au lieu de hardcoder 'maven-settings-dev'
-	                    configFileProvider([
-	                        configFile(
-	                            fileId: env.MAVEN_SETTINGS,  // ✅ CORRECTION: Utiliser la variable d'env
-	                            variable: 'MAVEN_SETTINGS_FILE'
-	                        )
-	                    ]) {
-	                        // Afficher preview des credentials (sécurisé)
-	                        sh """
-	                            echo "🔐 Client ID (preview): \$(echo ${CLIENT_ID} | cut -c1-8)..."
-	                            echo "📦 Démarrage de la commande Maven..."
-	                        """
+	                    // Vérification debug
+	                    sh """
+	                        echo "🔐 CLIENT_ID preview: \$(echo ${CLIENT_ID} | cut -c1-8)..."
+	                        echo "📋 Settings file: \${MAVEN_SETTINGS_FILE}"
 	                        
-	                        // Commande Maven
-	                        sh """
-	                            mvn clean deploy \
-	                              -s \${MAVEN_SETTINGS_FILE} \
-	                              -Danypoint.client.id=${CLIENT_ID} \
-	                              -Danypoint.client.secret=${CLIENT_SECRET} \
-	                              -DmuleDeploy \
-	                              -P${env.ACTIVE_PROFILES} \
-	                              -Denv=${env.DEPLOY_ENV}
-	                        """
-	                        
-	                        echo "✅ Déploiement vers ${env.DEPLOY_ENV} terminé avec succès!"
-	                    }
+	                        # Vérifier que les tokens ont été remplacés
+	                        echo "🔍 Vérification du settings.xml:"
+	                        grep -A2 "anypoint-exchange-v3" \${MAVEN_SETTINGS_FILE} || echo "❌ Section anypoint-exchange-v3 non trouvée"
+	                    """
+	                    
+	                    sh """
+	                        mvn clean deploy \
+	                          -s \${MAVEN_SETTINGS_FILE} \
+	                          -Danypoint.client.id=${CLIENT_ID} \
+	                          -Danypoint.client.secret=${CLIENT_SECRET} \
+	                          -DmuleDeploy \
+	                          -P${env.ACTIVE_PROFILES} \
+	                          -Denv=${env.DEPLOY_ENV} \
+	                          -X
+	                    """
 	                }
-	            } catch (Exception e) {
-	                echo """
-	                ════════════════════════════════════════════════════════════
-	                ❌ ERREUR LORS DU DÉPLOIEMENT
-	                ════════════════════════════════════════════════════════════
-	                Environnement : ${env.DEPLOY_ENV}
-	                Erreur        : ${e.message}
-	                ════════════════════════════════════════════════════════════
-	                """
-	                throw e
 	            }
 	        }
 	    }
