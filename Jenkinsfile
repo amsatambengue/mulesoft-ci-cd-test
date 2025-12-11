@@ -17,66 +17,66 @@ pipeline {
       }
     }
 
-	stage('Set Environment') {
-	    steps {
-	        script {
-	            echo "📌 Branche détectée : ${env.BRANCH_NAME}"
-	            
-	            // Configuration par environnement (approche Map - plus maintenable)
-	            def envConfig = [
-	                'develop': [
-	                    deployEnv: 'development',
-	                    sizingProfile: 'dev-sizing',
-	                    mavenSettings: 'maven-settings-dev'
-	                ],
-	                'release': [
-	                    deployEnv: 'test',
-	                    sizingProfile: 'test-sizing',
-	                    mavenSettings: 'maven-settings-test'
-	                ],
-	                'main': [
-	                    deployEnv: 'production',
-	                    sizingProfile: 'prod-sizing',
-	                    mavenSettings: 'maven-settings-prod'
-	                ]
-	            ]
-	            
-	            // Déterminer la clé de configuration
-	            def configKey = ''
-	            if (env.BRANCH_NAME == 'develop') {
-	                configKey = 'develop'
-	            } else if (env.BRANCH_NAME.startsWith('release/')) {
-	                configKey = 'release'
-	            } else if (env.BRANCH_NAME == 'main') {
-	                configKey = 'main'
-	            } else {
-	                error "❌ Branche [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
-	            }
-	            
-	            // Récupérer la configuration
-	            def config = envConfig[configKey]
-	            
-	            // Assigner aux variables d'environnement
-	            env.DEPLOY_ENV = config.deployEnv
-	            env.SIZING_PROFILE = config.sizingProfile
-	            env.MAVEN_SETTINGS = config.mavenSettings
-	            env.ACTIVE_PROFILES = "ci,${config.sizingProfile}"
-	            
-	            // Affichage des informations
-	            echo """
-	            ════════════════════════════════════════════════════════════
-	            📌 Configuration du Pipeline
-	            ════════════════════════════════════════════════════════════
-	            🌿 Branche               : ${env.BRANCH_NAME}
-	            🌍 Environnement         : ${env.DEPLOY_ENV}
-	            📦 Sizing Profile        : ${env.SIZING_PROFILE}
-	            📋 Maven Settings        : ${env.MAVEN_SETTINGS}
-	            🔧 Profils Maven actifs  : ${env.ACTIVE_PROFILES}
-	            ════════════════════════════════════════════════════════════
-	            """
-	        }
-	    }
-	}
+stage('Set Environment') {
+    steps {
+        script {
+            echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+            
+            // Configuration par environnement (approche Map - plus maintenable)
+            def envConfig = [
+                'develop': [
+                    deployEnv: 'development',
+                    sizingProfile: 'dev-sizing',
+                    mavenSettings: 'maven-settings-dev'
+                ],
+                'release': [
+                    deployEnv: 'test',
+                    sizingProfile: 'test-sizing',
+                    mavenSettings: 'maven-settings-test'
+                ],
+                'main': [
+                    deployEnv: 'production',
+                    sizingProfile: 'prod-sizing',
+                    mavenSettings: 'maven-settings-prod'
+                ]
+            ]
+            
+            // Déterminer la clé de configuration
+            def configKey = ''
+            if (env.BRANCH_NAME == 'develop') {
+                configKey = 'develop'
+            } else if (env.BRANCH_NAME.startsWith('release/')) {
+                configKey = 'release'
+            } else if (env.BRANCH_NAME == 'main') {
+                configKey = 'main'
+            } else {
+                error "❌ Branche [${env.BRANCH_NAME}] non gérée pour déploiement CI/CD"
+            }
+            
+            // Récupérer la configuration
+            def config = envConfig[configKey]
+            
+            // Assigner aux variables d'environnement
+            env.DEPLOY_ENV = config.deployEnv
+            env.SIZING_PROFILE = config.sizingProfile
+            //env.MAVEN_SETTINGS = config.mavenSettings
+            env.ACTIVE_PROFILES = "ci,${config.sizingProfile}"
+            
+            // Affichage des informations
+            echo """
+            ════════════════════════════════════════════════════════════
+            📌 Configuration du Pipeline
+            ════════════════════════════════════════════════════════════
+            🌿 Branche               : ${env.BRANCH_NAME}
+            🌍 Environnement         : ${env.DEPLOY_ENV}
+            📦 Sizing Profile        : ${env.SIZING_PROFILE}
+            📋 Maven Settings        : ${env.MAVEN_SETTINGS}
+            🔧 Profils Maven actifs  : ${env.ACTIVE_PROFILES}
+            ════════════════════════════════════════════════════════════
+            """
+        }
+    }
+}
 
     stage('Adjust Version') {
       when {
@@ -140,7 +140,7 @@ stage('Build & Deploy') {
                 usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
                 usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
             ]) {
-                configFileProvider([configFile(fileId: mavenSettings, variable: 'MAVEN_SETTINGS')]) {
+                configFileProvider([configFile(fileId: 'maven-settings-dev', variable: 'MAVEN_SETTINGS')]) {
                     sh """
                         mvn clean deploy \
                           -s \${MAVEN_SETTINGS} \
