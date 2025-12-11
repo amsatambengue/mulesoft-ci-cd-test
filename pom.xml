@@ -49,8 +49,8 @@
 	            </property>
 	        </activation>
 	        <properties>
-	            <cloudhub.vCores>0.1</cloudhub.vCores>
-	            <cloudhub.replicas>1</cloudhub.replicas>
+	            <cloudhub.vCores>0.3</cloudhub.vCores>
+	            <cloudhub.replicas>3</cloudhub.replicas>
 	        </properties>
 	    </profile>
 	
