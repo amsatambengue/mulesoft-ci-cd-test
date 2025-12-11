@@ -102,14 +102,17 @@ pipeline {
       def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
       def mavenSettingsId
 
-	// Choix dynamique du settings.xml selon l'env (tu crées 3 fichiers dans Jenkins)
-      if (env.BRANCH_NAME == 'develop') {
-	  mavenSettingsId = 'maven-settings-dev'
-	} else if (env.DEPLOY_ENV == 'test') {
-	  mavenSettingsId = 'maven-settings-test'
-	} else if (env.DEPLOY_ENV == 'production') {
-	  mavenSettingsId = 'maven-settings-prod'
-	}
+		// Choix dynamique du settings.xml selon l'env (tu crées 3 fichiers dans Jenkins)
+	      if (env.BRANCH_NAME == 'develop') {
+		  mavenSettingsId = 'maven-settings-dev'
+		} else if (env.DEPLOY_ENV == 'test') {
+		  mavenSettingsId = 'maven-settings-test'
+		} else if (env.DEPLOY_ENV == 'production') {
+		  mavenSettingsId = 'maven-settings-prod'
+		}
+
+      echo "✅ Applied Maven Settings:  ${mavenSettingsId}"
+
 
       withCredentials([
         usernamePassword(credentialsId: nexusCredId, usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PWD'),
