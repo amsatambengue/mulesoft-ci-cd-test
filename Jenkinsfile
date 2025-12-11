@@ -59,7 +59,7 @@ stage('Set Environment') {
             // Assigner aux variables d'environnement
             env.DEPLOY_ENV = config.deployEnv
             env.SIZING_PROFILE = config.sizingProfile
-            env.MAVEN_SETTINGS = config.mavenSettings
+            env.MAVEN_SETTINGS = 'maven-settings-dev-custom'
             env.ACTIVE_PROFILES = "ci,${config.sizingProfile}"
             
             // Affichage des informations
@@ -134,7 +134,8 @@ stage('Set Environment') {
 	    steps {
 	        script {
 	            def nexusCredId = 'nexus-releases'
-	            def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+	            //def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+	            def anypointCredId = "anypoint-connected-app-try"
 	            
 	            withCredentials([
 	                usernamePassword(
