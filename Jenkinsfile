@@ -110,11 +110,11 @@ stage('Set Environment') {
 		    }
 		
 		      // Injecter dans l'env pour le shell
-			  env.ANYPOINT_CLIENT_ID = parts[0]
-			  env.ANYPOINT_CLIENT_SECRET = parts[1]
+			  env.TEST_CLIENT_ID = parts[0]
+			  env.TEST_CLIENT_SECRET = parts[1]
 			
-			  echo "client_id length: ${env.ANYPOINT_CLIENT_ID.length()}"
-			  echo "client_secret length: ${env.ANYPOINT_CLIENT_SECRET.length()}"
+			  echo "client_id: ${env.TEST_CLIENT_ID} - length: ${env.TEST_CLIENT_ID.length()}"
+			  echo "client_secret: ${env.TEST_CLIENT_SECRET} - length: ${env.TEST_CLIENT_SECRET.length()}"
 		
 		    // Exemple d’usage
 		    echo "Username: ${usernameVariable} length: ${usernameVariable.length()}"
