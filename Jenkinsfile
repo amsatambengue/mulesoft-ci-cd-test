@@ -109,8 +109,12 @@ stage('Set Environment') {
 		        error("Format invalide de TEST_CLIENT_SECRET (attendu: username~?~password)")
 		    }
 		
-		    def usernameVariable = parts[0]
-		    def passwordVariable = parts[1]
+		      // Injecter dans l'env pour le shell
+			  env.ANYPOINT_CLIENT_ID = parts[0]
+			  env.ANYPOINT_CLIENT_SECRET = parts[1]
+			
+			  echo "client_id length: ${env.ANYPOINT_CLIENT_ID.length()}"
+			  echo "client_secret length: ${env.ANYPOINT_CLIENT_SECRET.length()}"
 		
 		    // Exemple d’usage
 		    echo "Username: ${usernameVariable} length: ${usernameVariable.length()}"
