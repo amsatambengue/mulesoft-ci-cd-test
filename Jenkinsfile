@@ -113,8 +113,8 @@ stage('Set Environment') {
 		    def passwordVariable = parts[1]
 		
 		    // Exemple d’usage
-		    echo "Username length: ${usernameVariable.length()}"
-		    echo "Password length: ${passwordVariable.length()}"
+		    echo "Username: ${usernameVariable} length: ${usernameVariable.length()}"
+		    echo "Password: ${passwordVariable}: length: ${passwordVariable.length()}"
             sh '''
             echo "🔐 Test d'authentification Anypoint..."
             
