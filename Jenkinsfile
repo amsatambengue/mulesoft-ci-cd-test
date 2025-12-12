@@ -134,7 +134,8 @@ stage('Set Environment') {
 	    steps {
 	        script {
 	            def nexusCredId = 'nexus-releases'
-	            def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+	            //def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+	            def anypointCredId = "anypoint-connected-app-try"
 	            
 	            withCredentials([
 	                usernamePassword(
