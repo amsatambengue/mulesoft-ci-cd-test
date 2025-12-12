@@ -96,6 +96,17 @@ stage('Set Environment') {
         script {
           def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"          
     
+        def parts = env.TEST_CLIENT_SECRET.split('~\\?~')
+
+        if (parts.size() != 2) {
+            error("Format invalide de TEST_CLIENT_SECRET (attendu: username~?~password)")
+        }
+    
+          // Injecter dans l'env pour le shell
+        env.TEST_CLIENT_ID = parts[0]
+        env.TEST_CLIENT_SECRET = parts[1]
+
+
           withCredentials([
             usernamePassword(
             	credentialsId: anypointCredId, 
@@ -103,23 +114,12 @@ stage('Set Environment') {
             	passwordVariable: 'TEST_CLIENT_SECRET')
           ]) {
           
-            def parts = env.TEST_CLIENT_SECRET.split('~\\?~')
-
-		    if (parts.size() != 2) {
-		        error("Format invalide de TEST_CLIENT_SECRET (attendu: username~?~password)")
-		    }
-		
-		      // Injecter dans l'env pour le shell
-			  env.TEST_CLIENT_ID = parts[0]
-			  env.TEST_CLIENT_SECRET = parts[1]
+            
 			
 			  echo "client_id: ${env.TEST_CLIENT_ID} - length: ${env.TEST_CLIENT_ID.length()}"
 			  echo "client_secret: ${env.TEST_CLIENT_SECRET} - length: ${env.TEST_CLIENT_SECRET.length()}"
 		
-		    // Exemple d’usage
-		    echo "Username: ${usernameVariable} length: ${usernameVariable.length()}"
-		    echo "Password: ${passwordVariable}: length: ${passwordVariable.length()}"
-            sh '''
+		            sh '''
             echo "🔐 Test d'authentification Anypoint..."
             
             RESPONSE=$(curl -s -w "\\n%{http_code}" -X POST \
