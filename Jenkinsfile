@@ -91,65 +91,6 @@ stage('Set Environment') {
       }
     }
 
-    stage('Test Anypoint Auth') {
-      steps {
-        script {
-          def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"          
-    
-        def parts = env.TEST_CLIENT_SECRET.split('~\\?~')
-
-        if (parts.size() != 2) {
-            error("Format invalide de TEST_CLIENT_SECRET (attendu: username~?~password)")
-        }
-    
-          // Injecter dans l'env pour le shell
-        env.TEST_CLIENT_ID = parts[0]
-        env.TEST_CLIENT_SECRET = parts[1]
-
-
-          withCredentials([
-            usernamePassword(
-            	credentialsId: anypointCredId, 
-            	usernameVariable: 'TEST_CLIENT_ID', 
-            	passwordVariable: 'TEST_CLIENT_SECRET')
-          ]) {
-          
-            
-			
-			  echo "client_id: ${env.TEST_CLIENT_ID} - length: ${env.TEST_CLIENT_ID.length()}"
-			  echo "client_secret: ${env.TEST_CLIENT_SECRET} - length: ${env.TEST_CLIENT_SECRET.length()}"
-		
-		            sh '''
-            echo "🔐 Test d'authentification Anypoint..."
-            
-            RESPONSE=$(curl -s -w "\\n%{http_code}" -X POST \
-              https://anypoint.mulesoft.com/accounts/api/v2/oauth2/token \
-              -H "Content-Type: application/json" \
-              -d "{
-                \\"grant_type\\": \\"client_credentials\\",
-                \\"client_id\\": \\"$TEST_CLIENT_ID\\",
-                \\"client_secret\\": \\"$TEST_CLIENT_SECRET\\"
-              }")
-            
-            HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | head -n-1)
-            
-            echo "HTTP Status: $HTTP_CODE"
-            
-            if [ "$HTTP_CODE" = "200" ]; then
-              echo "✅ Authentification réussie!"
-              echo "$BODY" | grep -o '"access_token":"[^"]*"' | head -c 80
-            else
-              echo "❌ Échec d'authentification!"
-              echo "$BODY"
-              exit 1
-            fi
-            '''
-          }
-        }
-      }
-    }
-
 	stage('Build & Deploy') {
 	    steps {
 	        script {
