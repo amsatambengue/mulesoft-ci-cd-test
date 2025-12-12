@@ -60,7 +60,7 @@ stage('Set Environment') {
             env.DEPLOY_ENV = config.deployEnv
             env.SIZING_PROFILE = config.sizingProfile
             env.MAVEN_SETTINGS = 'maven-settings-dev-custom'
-            env.ACTIVE_PROFILES = "ci,${env.SIZING_PROFILE}"
+            env.ACTIVE_PROFILES = 'ci,${env.SIZING_PROFILE}'
             
             // Affichage des informations
             echo """
