@@ -57,10 +57,10 @@ stage('Set Environment') {
             def config = envConfig[configKey]
             
             // Assigner aux variables d'environnement
-            env.DEPLOY_ENV = config.deployEnv
-            env.SIZING_PROFILE = config.sizingProfile
-            env.MAVEN_SETTINGS = 'maven-settings-dev-custom'
-            env.ACTIVE_PROFILES = 'ci,${env.SIZING_PROFILE}'
+            env.DEPLOY_ENV      = "${config.deployEnv}"
+            env.SIZING_PROFILE  = "${config.sizingProfile}"
+            env.MAVEN_SETTINGS  = 'maven-settings-dev-custom'
+            env.ACTIVE_PROFILES = "ci,${config.sizingProfile}".toString()
             
             // Affichage des informations
             echo """
