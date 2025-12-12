@@ -6,9 +6,9 @@ pipeline {
     jdk 'jdk-17'
   }
 
-  environment {
+  //environment {
     //ACTIVE_PROFILES = 'ci'
-  }
+ // }
 
   stages {
     stage('Checkout') {
