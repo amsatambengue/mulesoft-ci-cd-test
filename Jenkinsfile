@@ -7,7 +7,7 @@ pipeline {
   }
 
   environment {
-    ACTIVE_PROFILES = 'ci'
+    //ACTIVE_PROFILES = 'ci'
   }
 
   stages {
