@@ -96,6 +96,16 @@ stage('Set Environment') {
         script {
           def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
           
+          //Séparation Username et password venant de password dans le xml
+          def parts = env.TEST_CLIENT_SECRET.split('~\\?~')
+
+		    if (parts.size() != 2) {
+		        error("Format invalide de TEST_CLIENT_SECRET (attendu: username~?~password)")
+		    }
+		
+		    def usernameVariable = parts[0]
+		    def passwordVariable = parts[1]
+		    
           withCredentials([
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
           ]) {
