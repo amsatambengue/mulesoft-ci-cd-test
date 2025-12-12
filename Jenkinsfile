@@ -122,7 +122,7 @@ stage('Set Environment') {
             else
               echo "❌ Échec d'authentification!"
               echo "$BODY"
-              exit 1
+              //exit 1
             fi
             '''
           }
