@@ -94,10 +94,16 @@ stage('Set Environment') {
     stage('Test Anypoint Auth') {
       steps {
         script {
-          def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+          def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"          
+    
+          withCredentials([
+            usernamePassword(
+            	credentialsId: anypointCredId, 
+            	usernameVariable: 'TEST_CLIENT_ID', 
+            	passwordVariable: 'TEST_CLIENT_SECRET')
+          ]) {
           
-          //Séparation Username et password venant de password dans le xml
-          def parts = env.TEST_CLIENT_SECRET.split('~\\?~')
+            def parts = env.TEST_CLIENT_SECRET.split('~\\?~')
 
 		    if (parts.size() != 2) {
 		        error("Format invalide de TEST_CLIENT_SECRET (attendu: username~?~password)")
@@ -105,10 +111,10 @@ stage('Set Environment') {
 		
 		    def usernameVariable = parts[0]
 		    def passwordVariable = parts[1]
-		    
-          withCredentials([
-            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'TEST_CLIENT_ID', passwordVariable: 'TEST_CLIENT_SECRET')
-          ]) {
+		
+		    // Exemple d’usage
+		    echo "Username length: ${usernameVariable.length()}"
+		    echo "Password length: ${passwordVariable.length()}"
             sh '''
             echo "🔐 Test d'authentification Anypoint..."
             
@@ -132,7 +138,7 @@ stage('Set Environment') {
             else
               echo "❌ Échec d'authentification!"
               echo "$BODY"
-              //exit 1
+              exit 1
             fi
             '''
           }
