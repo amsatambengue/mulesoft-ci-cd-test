@@ -62,6 +62,23 @@ stage('Set Environment') {
             env.MAVEN_SETTINGS  = 'maven-settings-dev-custom'
             env.ACTIVE_PROFILES = "ci,${config.sizingProfile}".toString()
             
+            
+            //debug
+            echo "DBG SIZING_PROFILE=|${env.SIZING_PROFILE}| len=${env.SIZING_PROFILE?.length()}"
+			echo "DBG ACTIVE_PROFILES(before)=|${env.ACTIVE_PROFILES}| len=${env.ACTIVE_PROFILES?.length()}"
+			
+			env.ACTIVE_PROFILES = "ci,${env.SIZING_PROFILE}".toString()
+			
+			echo "DBG ACTIVE_PROFILES(after)=|${env.ACTIVE_PROFILES}| len=${env.ACTIVE_PROFILES?.length()}"
+			echo "DBG ACTIVE_PROFILES chars=" + env.ACTIVE_PROFILES?.collect { ((int)it.charAt(0)).toString() }  // codes ASCII
+			 
+			sh '''
+			  echo "SHELL ACTIVE_PROFILES=|$ACTIVE_PROFILES|"
+			  printf 'SHELL ACTIVE_PROFILES (%%q)=%q\n' "$ACTIVE_PROFILES"
+			  env | grep -E '^ACTIVE_PROFILES=' || true
+			'''
+           
+            
             // Affichage des informations
             echo """
             ════════════════════════════════════════════════════════════
