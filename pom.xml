@@ -49,7 +49,7 @@
 	            </property>
 	        </activation>
 	        <properties>
-	            <cloudhub.vCores>0.3</cloudhub.vCores>
+	            <cloudhub.vCores>0.5</cloudhub.vCores>
 	            <cloudhub.replicas>3</cloudhub.replicas>
 	        </properties>
 	    </profile>
@@ -79,7 +79,7 @@
 	            </property>
 	        </activation>
 	        <properties>
-	            <cloudhub.vCores>0.4</cloudhub.vCores>
+	            <cloudhub.vCores>0.5</cloudhub.vCores>
 	            <cloudhub.replicas>2</cloudhub.replicas>
 	        </properties>
 	    </profile>
