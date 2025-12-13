@@ -75,7 +75,23 @@ pipeline {
     }
 }
 
-
+stage('MUnit Tests & Coverage') {
+    when {
+        expression { 
+            env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' 
+        }
+    }
+    
+    steps {
+        sh """
+            export MAVEN_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
+            mvn clean verify \
+                -s ${MAVEN_SETTINGS_FILE} \
+                -Denv=${env.DEPLOY_ENV} \
+                -DargLine="-Xmx2048m"
+        """
+    }
+}
 
   stage('Build, Deploy to Development/UAT') {
       when {
