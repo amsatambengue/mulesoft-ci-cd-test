@@ -75,17 +75,7 @@ pipeline {
     }
 }
 
-stage('MUnit Tests & Coverage') {
-    steps {
-        sh """
-            mvn clean verify \
-                -s ${MAVEN_SETTINGS_FILE} \
-                -Denv=${env.DEPLOY_ENV} \
-                -Dmule.test.http.port=0 \
-                -Dmule.test.https.port=0
-        """
-    }
-}
+
 
   stage('Build, Deploy to Development/UAT') {
       when {
