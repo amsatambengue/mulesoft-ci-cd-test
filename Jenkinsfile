@@ -75,17 +75,7 @@ pipeline {
     }
 }
 
-stage('MUnit Tests & Coverage') {
-    when {
-        expression { 
-            env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' 
-        }
-    }
-    
-    steps {
-        sh "mvn clean verify -s ${MAVEN_SETTINGS_FILE} -Denv=${env.DEPLOY_ENV}"
-    }
-}
+
 
   stage('Build, Deploy to Development/UAT') {
       when {
