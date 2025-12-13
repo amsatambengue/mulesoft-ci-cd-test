@@ -77,27 +77,16 @@ pipeline {
 
 stage('MUnit Tests & Coverage') {
     steps {
-        script {
-            echo "🔍 Variables d'environnement:"
-            sh 'env | grep -i maven || true'
-            sh 'java -version'
-            sh 'mvn -version'
-            
-            echo "🧹 Nettoyage des anciens builds MUnit"
-            sh 'rm -rf target/munitworkingdir-* || true'
-            
-            echo "🧪 Lancement des tests MUnit"
-            
-            // ← CETTE LIGNE DOIT ÊTRE EXÉCUTÉE !
-            sh """
-                mvn clean verify \
-                    -Denv=${env.DEPLOY_ENV} \
-                    -DargLine="-Xmx2048m -XX:MaxMetaspaceSize=512m" \
-                    -X \
-                    -e
-            """
-        }
+        echo "Avant mvn"
+        sh 'mvn --version'
+        
+        echo "Exécution mvn verify"
+        sh 'mvn clean verify -Denv=development'
+        
+        echo "Après mvn"
+        sh 'ls -la target/'
     }
+}
     
     post {
         failure {
