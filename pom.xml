@@ -230,6 +230,10 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</pluginRepository>
+	  	<pluginRepository>
+	    	<id>mulesoft-public</id>
+	   		 <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
+	  	</pluginRepository>
 	</pluginRepositories>
 	<distributionManagement>
 		<repository>
