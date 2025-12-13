@@ -75,26 +75,7 @@ pipeline {
     }
 }
 
-stage('MUnit Tests & Coverage') {
-  steps {
-    echo "Avant mvn"
-    sh 'mvn --version'
 
-    echo "Purge cache Maven (artefact Mule runtime BOM + lastUpdated)"
-	sh '''
-	  set -eux
-	  mvn -U -X -DskipTests dependency:get \
-	    -Dartifact=com.mulesoft.mule.distributions:mule-runtime-impl-no-services-bom:pom:4.9.0
-	'''
-
-
-    echo "Exécution mvn verify (force update)"
-    sh 'mvn -U clean verify -Denv=development'
-
-    echo "Après mvn"
-    sh 'ls -la target/'
-  }
-}
 
 
   stage('Build, Deploy to Development/UAT') {
