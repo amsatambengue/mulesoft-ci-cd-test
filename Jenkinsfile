@@ -6,10 +6,6 @@ pipeline {
     jdk 'jdk-17'
   }
 
-// environment {
-    //ACTIVE_PROFILES = 'ci'
- // }
-
   stages {
     stage('Checkout') {
       steps {
@@ -17,10 +13,10 @@ pipeline {
       }
     }
 
-stage('Set Environment') {
+  stage('Set Environment') {
     steps {
         script {
-            echo "📌 Branche détectée : ${env.BRANCH_NAME}"
+            echo "Branche détectée : ${env.BRANCH_NAME}"
             
             // Configuration par environnement (approche Map - plus maintenable)
             def envConfig = [
@@ -59,7 +55,7 @@ stage('Set Environment') {
             // Assigner aux variables d'environnement
             env.DEPLOY_ENV      = config.deployEnv
             env.SIZING_PROFILE  = config.sizingProfile
-            env.MAVEN_SETTINGS  = 'maven-settings-dev-custom'
+            env.MAVEN_SETTINGS  = 'maven-settings-file'
             env.ACTIVE_PROFILES = "ci,${config.sizingProfile}"  
             
             // Affichage des informations
