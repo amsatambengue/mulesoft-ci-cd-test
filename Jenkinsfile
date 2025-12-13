@@ -87,6 +87,8 @@ stage('MUnit Tests & Coverage') {
             sh 'rm -rf target/munitworkingdir-* || true'
             
             echo "🧪 Lancement des tests MUnit"
+            
+            // ← CETTE LIGNE DOIT ÊTRE EXÉCUTÉE !
             sh """
                 mvn clean verify \
                     -s ${MAVEN_SETTINGS_FILE} \
