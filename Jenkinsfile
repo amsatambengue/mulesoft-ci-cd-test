@@ -77,13 +77,7 @@ pipeline {
 
 stage('MUnit Tests & Coverage') {
     steps {
-        sh """
-            export MAVEN_OPTS="-Xmx2048m -XX:MaxMetaspaceSize=512m"
-            mvn clean verify \
-                -s ${MAVEN_SETTINGS_FILE} \
-                -Denv=${env.DEPLOY_ENV} \
-                -DargLine="-Xmx2048m"
-        """
+        sh "mvn clean verify -s ${MAVEN_SETTINGS_FILE} -Denv=${env.DEPLOY_ENV}"
     }
 }
 
