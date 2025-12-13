@@ -213,6 +213,10 @@
             <name>MuleSoft Enterprise Repository</name>
             <url>https://repository.mulesoft.org/nexus/content/repositories/releases-ee/</url>
         </repository>
+	    <repository>
+	        <id>mule-public</id>
+	        <url>https://repository.mulesoft.org/nexus/content/repositories/releases/</url>
+	    </repository>        
 
 	</repositories>
 
