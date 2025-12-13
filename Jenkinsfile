@@ -91,7 +91,6 @@ stage('MUnit Tests & Coverage') {
             // ← CETTE LIGNE DOIT ÊTRE EXÉCUTÉE !
             sh """
                 mvn clean verify \
-                    -s ${MAVEN_SETTINGS_FILE} \
                     -Denv=${env.DEPLOY_ENV} \
                     -DargLine="-Xmx2048m -XX:MaxMetaspaceSize=512m" \
                     -X \
