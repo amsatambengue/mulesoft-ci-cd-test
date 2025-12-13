@@ -208,6 +208,12 @@
 			<url>https://repository.mulesoft.org/releases/</url>
 			<layout>default</layout>
 		</repository>
+		<repository>
+            <id>mulesoft-enterprise</id>
+            <name>MuleSoft Enterprise Repository</name>
+            <url>https://repository.mulesoft.org/nexus/content/repositories/releases-ee/</url>
+        </repository>
+
 	</repositories>
 
 	<pluginRepositories>
