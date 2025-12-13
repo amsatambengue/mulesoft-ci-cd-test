@@ -81,11 +81,12 @@ stage('MUnit Tests & Coverage') {
     sh 'mvn --version'
 
     echo "Purge cache Maven (artefact Mule runtime BOM + lastUpdated)"
-    sh '''
-      set -eux
-      rm -rf ~/.m2/repository/com/mulesoft/mule/distributions/mule-runtime-impl-no-services-bom || true
-      find ~/.m2/repository -name "*.lastUpdated" -delete || true
-    '''
+	sh '''
+	  set -eux
+	  mvn -U -X -DskipTests dependency:get \
+	    -Dartifact=com.mulesoft.mule.distributions:mule-runtime-impl-no-services-bom:pom:4.9.0
+	'''
+
 
     echo "Exécution mvn verify (force update)"
     sh 'mvn -U clean verify -Denv=development'
