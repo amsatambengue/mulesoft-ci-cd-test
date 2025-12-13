@@ -87,19 +87,6 @@ stage('MUnit Tests & Coverage') {
         sh 'ls -la target/'
     }
 }
-    
-    post {
-        failure {
-            sh '''
-                echo "=== Logs MUnit ==="
-                find target -name "*.log" -type f -exec echo "File: {}" \\; -exec cat {} \\; || true
-                
-                echo "=== Contenu du répertoire target ==="
-                ls -laR target/ || true
-            '''
-        }
-    }
-}
 
   stage('Build, Deploy to Development/UAT') {
       when {
