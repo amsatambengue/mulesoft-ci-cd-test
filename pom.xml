@@ -139,7 +139,7 @@
 						<phase>test</phase>
 						<goals>
 							<goal>test</goal>
-							<<!-- goal>coverage-report</goal> -->
+							<!-- <goal>coverage-report</goal> -->
 						</goals>
 					</execution>
 				</executions>
