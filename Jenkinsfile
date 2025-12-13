@@ -81,9 +81,11 @@ pipeline {
     	}
 	    
 	    steps {
-	       sh """
-               mvn clean verify -s ${MAVEN_SETTINGS_FILE} -Denv=${env.DEPLOY_ENV}
-            """ 
+	      script {
+		       sh """
+	               mvn clean verify -s ${MAVEN_SETTINGS_FILE} -Denv=${env.DEPLOY_ENV}
+	            """
+	      } 
 	    }
 	    
 }
