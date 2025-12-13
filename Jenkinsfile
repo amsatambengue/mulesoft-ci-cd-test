@@ -7,6 +7,7 @@ pipeline {
   }
 
   stages {
+  
     stage('Checkout') {
       steps {
         checkout scm
@@ -74,20 +75,17 @@ pipeline {
     }
 }
 
-    stage('Adjust Version') {
-      when {
-        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
-      }
-      steps {
-        sh '''
-          echo "Suppression de -SNAPSHOT pour release/main"
-          mvn versions:set -DremoveSnapshot
-          mvn versions:commit
-        '''
-      }
+  stage('MUnit Tests & Coverage') {
+    when { expression { env.DEPLOY_ENV == 'dev' || env.DEPLOY_ENV == 'test' } }
+    steps {
+      sh "mvn clean verify -s ${MAVEN_SETTINGS_FILE} -Denv=${env.DEPLOY_ENV}"
     }
+}
 
-  stage('Build & Deploy (Dev/Test)') {
+  stage('Build, Deploy to Development/UAT') {
+      when {
+	    expression { return env.DEPLOY_ENV == 'dev' || env.DEPLOY_ENV == 'test' }
+	  }
       steps {
           script {
               def nexusCredId = 'nexus-releases'
@@ -112,7 +110,10 @@ pipeline {
                           fileId: env.MAVEN_SETTINGS,
                           variable: 'MAVEN_SETTINGS_FILE'
                       )
-                  ]) {                     
+                  ]) {       
+                     sh """
+                          mvn clean verify
+                      """              
                       sh """
                           mvn clean deploy \
                             -s \${MAVEN_SETTINGS_FILE} \
@@ -127,6 +128,19 @@ pipeline {
           }
       }
   }
+  
+  stage('Adjust Version') {
+      when {
+        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
+      }
+      steps {
+        sh '''
+          echo "Suppression de -SNAPSHOT pour release/main"
+          mvn versions:set -DremoveSnapshot
+          mvn versions:commit
+        '''
+      }
+    }
 
     stage('Promote to Prod') {
       when {
@@ -134,7 +148,15 @@ pipeline {
       }
       steps {
         echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-        sh "mvn deploy -P${env.ACTIVE_PROFILES} -Denv=${env.DEPLOY_ENV} -DskipTests"
+           sh """
+		      mvn deploy \
+		        -s ${MAVEN_SETTINGS_FILE} \
+		        -Danypoint.client.id=${CLIENT_ID} \
+		        -Danypoint.client.secret=${CLIENT_SECRET} \
+		        -DmuleDeploy \
+		        -DskipTests \
+		        -Denv=prod
+		    """
       }
     }
   }
