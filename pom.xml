@@ -144,11 +144,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<argLines>
-			            <argLine>-Xmx2048m</argLine>
-			            <argLine>-XX:MaxMetaspaceSize=512m</argLine>
-			            <argLine>-Dmule.test.timeoutSecs=180</argLine>
-			        </argLines>
 				    <!-- Lien avec profil ci -->
     				<skipMunitTests>${munit.skip}</skipMunitTests>
 					<coverage>
