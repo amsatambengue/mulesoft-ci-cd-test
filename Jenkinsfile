@@ -76,17 +76,25 @@ pipeline {
 }
 
 stage('MUnit Tests & Coverage') {
-    steps {
-        echo "Avant mvn"
-        sh 'mvn --version'
-        
-        echo "Exécution mvn verify"
-        sh 'mvn clean verify -Denv=development'
-        
-        echo "Après mvn"
-        sh 'ls -la target/'
-    }
+  steps {
+    echo "Avant mvn"
+    sh 'mvn --version'
+
+    echo "Purge cache Maven (artefact Mule runtime BOM + lastUpdated)"
+    sh '''
+      set -eux
+      rm -rf ~/.m2/repository/com/mulesoft/mule/distributions/mule-runtime-impl-no-services-bom || true
+      find ~/.m2/repository -name "*.lastUpdated" -delete || true
+    '''
+
+    echo "Exécution mvn verify (force update)"
+    sh 'mvn -U clean verify -Denv=development'
+
+    echo "Après mvn"
+    sh 'ls -la target/'
+  }
 }
+
 
   stage('Build, Deploy to Development/UAT') {
       when {
