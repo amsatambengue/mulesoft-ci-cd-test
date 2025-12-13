@@ -75,7 +75,41 @@ pipeline {
     }
 }
 
-
+stage('MUnit Tests & Coverage') {
+    steps {
+        script {
+            echo "🔍 Variables d'environnement:"
+            sh 'env | grep -i maven || true'
+            sh 'java -version'
+            sh 'mvn -version'
+            
+            echo "🧹 Nettoyage des anciens builds MUnit"
+            sh 'rm -rf target/munitworkingdir-* || true'
+            
+            echo "🧪 Lancement des tests MUnit"
+            sh """
+                mvn clean verify \
+                    -s ${MAVEN_SETTINGS_FILE} \
+                    -Denv=${env.DEPLOY_ENV} \
+                    -DargLine="-Xmx2048m -XX:MaxMetaspaceSize=512m" \
+                    -X \
+                    -e
+            """
+        }
+    }
+    
+    post {
+        failure {
+            sh '''
+                echo "=== Logs MUnit ==="
+                find target -name "*.log" -type f -exec echo "File: {}" \\; -exec cat {} \\; || true
+                
+                echo "=== Contenu du répertoire target ==="
+                ls -laR target/ || true
+            '''
+        }
+    }
+}
 
   stage('Build, Deploy to Development/UAT') {
       when {
