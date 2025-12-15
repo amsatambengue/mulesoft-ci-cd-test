@@ -132,10 +132,35 @@ pipeline {
       }
     }
 
-
+stage('Promote to Prod') {
+      when { branch 'main' }
+      steps {
+        script {
+          def anypointCredId = "anypoint-connected-app-prod"
+          withCredentials([
+            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+          ]) {
+            configFileProvider([
+              configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
+            ]) {
+              sh """
+                echo "⚠️ ATTENTION: ceci redeploie via Maven. Pas du no-rebuild."
+                mvn deploy \
+                  -s \${MAVEN_SETTINGS_FILE} \
+                  -Danypoint.client.id=\${CLIENT_ID} \
+                  -Danypoint.client.secret=\${CLIENT_SECRET} \
+                  -DmuleDeploy \
+                  -DskipTests \
+                  -Denv=prod
+              """
+            }
+          }
+        }
+      }
+    }
 
   post {
     success { echo "Pipeline CI/CD MuleSoft terminé avec succès." }
     failure { echo "Échec du pipeline." }
-  }
+  
 }
