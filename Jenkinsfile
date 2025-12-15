@@ -163,4 +163,5 @@ stage('Promote to Prod') {
     success { echo "Pipeline CI/CD MuleSoft terminé avec succès." }
     failure { echo "Échec du pipeline." }
   
+	}
 }
