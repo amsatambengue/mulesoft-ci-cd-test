@@ -72,9 +72,6 @@ pipeline {
     }
 }
 
-
-
-
   stage('Build, Deploy to Development/UAT') {
       when {
       expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
@@ -169,4 +166,4 @@ pipeline {
       echo "Échec du pipeline."
     }
   }
-}
+} 

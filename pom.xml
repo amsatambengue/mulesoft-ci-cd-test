@@ -49,7 +49,7 @@
 	            </property>
 	        </activation>
 	        <properties>
-	            <cloudhub.vCores>0.5</cloudhub.vCores>
+	            <cloudhub.vCores>0.1</cloudhub.vCores>
 	            <cloudhub.replicas>2</cloudhub.replicas>
 	        </properties>
 	    </profile>
