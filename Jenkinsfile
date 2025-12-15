@@ -158,10 +158,4 @@ stage('Promote to Prod') {
         }
       }
     }
-
-  post {
-    success { echo "Pipeline CI/CD MuleSoft terminé avec succès." }
-    failure { echo "Échec du pipeline." }
-  
-	}
 }
