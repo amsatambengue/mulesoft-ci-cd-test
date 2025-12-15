@@ -23,18 +23,15 @@ pipeline {
             def envConfig = [
                 'develop': [
                     deployEnv: 'development',
-                    sizingProfile: 'dev-sizing',
-                    mavenSettings: 'maven-settings-dev'
+                    sizingProfile: 'dev-sizing'
                 ],
                 'release': [
                     deployEnv: 'test',
-                    sizingProfile: 'test-sizing',
-                    mavenSettings: 'maven-settings-test'
+                    sizingProfile: 'test-sizing'
                 ],
                 'main': [
                     deployEnv: 'production',
-                    sizingProfile: 'prod-sizing',
-                    mavenSettings: 'maven-settings-prod'
+                    sizingProfile: 'prod-sizing'
                 ]
             ]
             
@@ -80,15 +77,15 @@ pipeline {
 
   stage('Build, Deploy to Development/UAT') {
       when {
-	    expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
-	  }
+      expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
+    }
       steps {
           script {
               def nexusCredId = 'nexus-releases'
               def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
                             
               withCredentials([
-              	  // NEXUS
+                  // NEXUS
                   usernamePassword(
                       credentialsId: nexusCredId, 
                       usernameVariable: 'NEXUS_USER',      
@@ -136,22 +133,32 @@ pipeline {
     }
 
     stage('Promote to Prod') {
-      when {
-        branch 'main'
-      }
+      when { branch 'main' }
       steps {
-        echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-           sh """
-		      mvn deploy \
-		        -s ${MAVEN_SETTINGS_FILE} \
-		        -Danypoint.client.id=${CLIENT_ID} \
-		        -Danypoint.client.secret=${CLIENT_SECRET} \
-		        -DmuleDeploy \
-		        -DskipTests \
-		        -Denv=prod
-		    """
+        script {
+          def anypointCredId = "anypoint-connected-app-prod"
+          withCredentials([
+            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+          ]) {
+            configFileProvider([
+              configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
+            ]) {
+              sh """
+                echo "⚠️ ATTENTION: ceci redeploie via Maven. Pas du no-rebuild."
+                mvn deploy \
+                  -s \${MAVEN_SETTINGS_FILE} \
+                  -Danypoint.client.id=\${CLIENT_ID} \
+                  -Danypoint.client.secret=\${CLIENT_SECRET} \
+                  -DmuleDeploy \
+                  -DskipTests \
+                  -Denv=prod
+              """
+            }
+          }
+        }
       }
     }
+    
   }
 
   post {
