@@ -23,18 +23,15 @@ pipeline {
             def envConfig = [
                 'develop': [
                     deployEnv: 'development',
-                    sizingProfile: 'dev-sizing',
-                    mavenSettings: 'maven-settings-dev'
+                    sizingProfile: 'dev-sizing'
                 ],
                 'release': [
                     deployEnv: 'test',
-                    sizingProfile: 'test-sizing',
-                    mavenSettings: 'maven-settings-test'
+                    sizingProfile: 'test-sizing'
                 ],
                 'main': [
                     deployEnv: 'production',
-                    sizingProfile: 'prod-sizing',
-                    mavenSettings: 'maven-settings-prod'
+                    sizingProfile: 'prod-sizing'
                 ]
             ]
             
@@ -135,31 +132,35 @@ pipeline {
       }
     }
 
-    stage('Promote to Prod') {
-      when {
-        branch 'main'
-      }
+stage('Promote to Prod') {
+      when { branch 'main' }
       steps {
-        echo "Promotion vers CloudHub-Prod depuis artefact Nexus validé"
-           sh """
-		      mvn deploy \
-		        -s ${MAVEN_SETTINGS_FILE} \
-		        -Danypoint.client.id=${CLIENT_ID} \
-		        -Danypoint.client.secret=${CLIENT_SECRET} \
-		        -DmuleDeploy \
-		        -DskipTests \
-		        -Denv=prod
-		    """
+        script {
+          def anypointCredId = "anypoint-connected-app-prod"
+          withCredentials([
+            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+          ]) {
+            configFileProvider([
+              configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
+            ]) {
+              sh """
+                echo "⚠️ ATTENTION: ceci redeploie via Maven. Pas du no-rebuild."
+                mvn deploy \
+                  -s \${MAVEN_SETTINGS_FILE} \
+                  -Danypoint.client.id=\${CLIENT_ID} \
+                  -Danypoint.client.secret=\${CLIENT_SECRET} \
+                  -DmuleDeploy \
+                  -DskipTests \
+                  -Denv=prod
+              """
+            }
+          }
+        }
       }
     }
-  }
 
   post {
-    success {
-      echo "Pipeline CI/CD MuleSoft terminé avec succès."
-    }
-    failure {
-      echo "Échec du pipeline."
-    }
+    success { echo "Pipeline CI/CD MuleSoft terminé avec succès." }
+    failure { echo "Échec du pipeline." }
   }
 }
