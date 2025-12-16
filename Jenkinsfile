@@ -59,7 +59,7 @@ pipeline {
             // Affichage des informations
             echo """
             ════════════════════════════════════════════════════════════
-            Configuration du Pipeline
+            📌 Configuration du Pipeline
             ════════════════════════════════════════════════════════════
             🌿 Branche               : ${env.BRANCH_NAME}
             🌍 Environnement         : ${env.DEPLOY_ENV}
@@ -72,28 +72,12 @@ pipeline {
     }
 }
 
-  stage('Adjust Version') {
-      when {
-        expression { return env.BRANCH_NAME.startsWith('release/') }
-      }
-      steps {
-        sh '''
-          echo "Suppression de -SNAPSHOT pour release"
-          mvn versions:set -DremoveSnapshot
-          mvn versions:commit
-          mvn -q help:evaluate -Dexpression=project.version -DforceStdout
-        '''
-      }
-    }
-
-  stage('Build, Deploy to development + test') {
+  stage('Build, Deploy to Development/UAT') {
       when {
       expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
     }
       steps {
           script {
-              echo "Deploying to ${env.DEPLOY_ENV}"
-        
               def nexusCredId = 'nexus-releases'
               def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
                             
@@ -131,6 +115,19 @@ pipeline {
           }
       }
   }
+  
+  stage('Adjust Version') {
+      when {
+        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
+      }
+      steps {
+        sh '''
+          echo "Suppression de -SNAPSHOT pour release/main"
+          mvn versions:set -DremoveSnapshot
+          mvn versions:commit
+        '''
+      }
+    }
 
     stage('Promote to Prod') {
       when { branch 'main' }
@@ -151,7 +148,7 @@ pipeline {
                   -Danypoint.client.secret=\${CLIENT_SECRET} \
                   -DmuleDeploy \
                   -DskipTests \
-                  -Denv=production
+                  -Denv=prod
               """
             }
           }
