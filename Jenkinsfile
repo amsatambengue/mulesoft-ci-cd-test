@@ -78,7 +78,7 @@ pipeline {
       }
       steps {
         sh '''
-          echo "Suppression de -SNAPSHOT pour release/main"
+          echo "Suppression de -SNAPSHOT pour release"
           mvn versions:set -DremoveSnapshot
           mvn versions:commit
           mvn -q help:evaluate -Dexpression=project.version -DforceStdout
@@ -92,6 +92,8 @@ pipeline {
     }
       steps {
           script {
+              echo "Deploying to ${env.DEPLOY_ENV}"
+        
               def nexusCredId = 'nexus-releases'
               def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
                             
