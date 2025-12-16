@@ -45,7 +45,7 @@
 	        <activation>
 	            <property>
 	                <name>env</name>
-	                <value>dev</value>
+	                <value>development</value>
 	            </property>
 	        </activation>
 	        <properties>
@@ -75,7 +75,7 @@
 	        <activation>
 	            <property>
 	                <name>env</name>
-	                <value>prod</value>
+	                <value>production</value>
 	            </property>
 	        </activation>
 	        <properties>

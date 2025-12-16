@@ -59,7 +59,7 @@ pipeline {
             // Affichage des informations
             echo """
             ════════════════════════════════════════════════════════════
-            📌 Configuration du Pipeline
+            Configuration du Pipeline
             ════════════════════════════════════════════════════════════
             🌿 Branche               : ${env.BRANCH_NAME}
             🌍 Environnement         : ${env.DEPLOY_ENV}
@@ -72,7 +72,21 @@ pipeline {
     }
 }
 
-  stage('Build, Deploy to Development/UAT') {
+  stage('Adjust Version') {
+      when {
+        expression { return env.BRANCH_NAME.startsWith('release/') }
+      }
+      steps {
+        sh '''
+          echo "Suppression de -SNAPSHOT pour release/main"
+          mvn versions:set -DremoveSnapshot
+          mvn versions:commit
+          mvn -q help:evaluate -Dexpression=project.version -DforceStdout
+        '''
+      }
+    }
+
+  stage('Build, Deploy to development + test') {
       when {
       expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
     }
@@ -115,19 +129,6 @@ pipeline {
           }
       }
   }
-  
-  stage('Adjust Version') {
-      when {
-        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
-      }
-      steps {
-        sh '''
-          echo "Suppression de -SNAPSHOT pour release/main"
-          mvn versions:set -DremoveSnapshot
-          mvn versions:commit
-        '''
-      }
-    }
 
     stage('Promote to Prod') {
       when { branch 'main' }
@@ -148,7 +149,7 @@ pipeline {
                   -Danypoint.client.secret=\${CLIENT_SECRET} \
                   -DmuleDeploy \
                   -DskipTests \
-                  -Denv=prod
+                  -Denv=production
               """
             }
           }
