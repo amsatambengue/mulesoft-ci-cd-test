@@ -141,17 +141,19 @@ pipeline {
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
           ]) {
             configFileProvider([
-              configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
+              configFile(
+              	fileId: env.MAVEN_SETTINGS, 
+              	variable: 'MAVEN_SETTINGS_FILE')
             ]) {
               sh """
                 echo "⚠️ ATTENTION: ceci redeploie via Maven. Pas du no-rebuild."
-                mvn deploy \
-                  -s \${MAVEN_SETTINGS_FILE} \
-                  -Danypoint.client.id=\${CLIENT_ID} \
-                  -Danypoint.client.secret=\${CLIENT_SECRET} \
-                  -DmuleDeploy \
-                  -DskipTests \
-                  -Denv=${env.DEPLOY_ENV}
+                          mvn clean deploy \
+                            -s \${MAVEN_SETTINGS_FILE} \
+                            -Danypoint.client.id=${CLIENT_ID} \
+                            -Danypoint.client.secret=${CLIENT_SECRET} \
+                            -DmuleDeploy \
+                            -P${env.ACTIVE_PROFILES} \
+                            -Denv=${env.DEPLOY_ENV}
               """
             }
           }
