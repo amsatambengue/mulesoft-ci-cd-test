@@ -77,8 +77,8 @@ pipeline {
 
   stage('Build, Deploy to Development/UAT') {
       when {
-      expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
-    }
+      	expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
+      }
       steps {
           script {
               def nexusCredId = 'nexus-releases'
@@ -133,20 +133,35 @@ pipeline {
     }
 
     stage('Promote to Prod') {
-      when { branch 'main' }
+      when {
+      	expression { return env.DEPLOY_ENV == 'production' }
+      }
       steps {
-        script {
-          def anypointCredId = "anypoint-connected-app-production"
-          withCredentials([
-            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
-          ]) {
-            configFileProvider([
-              configFile(
-              	fileId: env.MAVEN_SETTINGS, 
-              	variable: 'MAVEN_SETTINGS_FILE')
-            ]) {
-              sh """
-                echo "⚠️ ATTENTION: ceci redeploie via Maven. Pas du no-rebuild."
+          script {
+              def nexusCredId = 'nexus-releases'
+              def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
+                            
+              withCredentials([
+                  // NEXUS
+                  usernamePassword(
+                      credentialsId: nexusCredId, 
+                      usernameVariable: 'NEXUS_USER',      
+                      passwordVariable: 'NEXUS_PWD'       
+                  ),
+                  // ANYPOINT PLATFORM
+                  usernamePassword(
+                      credentialsId: anypointCredId, 
+                      usernameVariable: 'CLIENT_ID',       
+                      passwordVariable: 'CLIENT_SECRET'    
+                  )
+              ]) {
+                  configFileProvider([
+                      configFile(
+                          fileId: env.MAVEN_SETTINGS,
+                          variable: 'MAVEN_SETTINGS_FILE'
+                      )
+                  ]) {                   
+                      sh """
                           mvn clean deploy \
                             -s \${MAVEN_SETTINGS_FILE} \
                             -Danypoint.client.id=${CLIENT_ID} \
@@ -154,10 +169,10 @@ pipeline {
                             -DmuleDeploy \
                             -P${env.ACTIVE_PROFILES} \
                             -Denv=${env.DEPLOY_ENV}
-              """
-            }
+                      """
+                  }
+              }
           }
-        }
       }
     }
     
