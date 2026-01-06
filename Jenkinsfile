@@ -136,7 +136,7 @@ pipeline {
       when { branch 'main' }
       steps {
         script {
-          def anypointCredId = "anypoint-connected-app-prod"
+          def anypointCredId = "anypoint-connected-app-production"
           withCredentials([
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
           ]) {
