@@ -148,7 +148,7 @@ pipeline {
                   -Danypoint.client.secret=\${CLIENT_SECRET} \
                   -DmuleDeploy \
                   -DskipTests \
-                  -Denv=prod
+                  -Denv=${env.DEPLOY_ENV}
               """
             }
           }
