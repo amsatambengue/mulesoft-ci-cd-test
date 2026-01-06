@@ -145,13 +145,13 @@ pipeline {
             ]) {
               sh """
                 echo "⚠️ ATTENTION: ceci redeploie via Maven. Pas du no-rebuild."
-                mvn deploy \
-                  -s \${MAVEN_SETTINGS_FILE} \
-                  -Danypoint.client.id=\${CLIENT_ID} \
-                  -Danypoint.client.secret=\${CLIENT_SECRET} \
-                  -DmuleDeploy \
-                  -DskipTests \
-                  -Denv=${env.DEPLOY_ENV}
+                          mvn clean deploy \
+                            -s \${MAVEN_SETTINGS_FILE} \
+                            -Danypoint.client.id=${CLIENT_ID} \
+                            -Danypoint.client.secret=${CLIENT_SECRET} \
+                            -DmuleDeploy \
+                            -P${env.ACTIVE_PROFILES} \
+                            -Denv=${env.DEPLOY_ENV}
               """
             }
           }
