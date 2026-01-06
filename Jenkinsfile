@@ -141,7 +141,9 @@ pipeline {
             usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
           ]) {
             configFileProvider([
-              configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
+              configFile(
+              	fileId: env.MAVEN_SETTINGS, 
+              	variable: 'MAVEN_SETTINGS_FILE')
             ]) {
               sh """
                 echo "⚠️ ATTENTION: ceci redeploie via Maven. Pas du no-rebuild."
