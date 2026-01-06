@@ -75,9 +75,9 @@ pipeline {
 
 
 
-  stage('Build, Deploy to Development/UAT') {
+  stage('Build, Deploy) {
       when {
-      	expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
+      	expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' || env.DEPLOY_ENV == 'production' }
       }
       steps {
           script {
