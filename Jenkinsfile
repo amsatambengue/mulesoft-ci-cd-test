@@ -13,6 +13,10 @@ pipeline {
         checkout scm
       }
     }
+    
+    stage('Clean Workspace') {
+  		steps { deleteDir() }
+	}
 
   stage('Set Environment') {
     steps {
@@ -103,6 +107,14 @@ pipeline {
                   ]) {                   
                       sh """
                           mvn clean deploy \
+                            -s \${MAVEN_SETTINGS_FILE} \
+                            -Danypoint.client.id=${CLIENT_ID} \
+                            -Danypoint.client.secret=${CLIENT_SECRET} \
+                            -P${env.ACTIVE_PROFILES} \
+                            -Denv=${env.DEPLOY_ENV}
+                      """
+                      sh """
+                          mvn mule:deploy \
                             -s \${MAVEN_SETTINGS_FILE} \
                             -Danypoint.client.id=${CLIENT_ID} \
                             -Danypoint.client.secret=${CLIENT_SECRET} \
