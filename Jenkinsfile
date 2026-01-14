@@ -110,14 +110,6 @@ pipeline {
                             -s \${MAVEN_SETTINGS_FILE} \
                             -Danypoint.client.id=${CLIENT_ID} \
                             -Danypoint.client.secret=${CLIENT_SECRET} \
-                            -P${env.ACTIVE_PROFILES} \
-                            -Denv=${env.DEPLOY_ENV}
-                      """
-                      sh """
-                          mvn mule:deploy \
-                            -s \${MAVEN_SETTINGS_FILE} \
-                            -Danypoint.client.id=${CLIENT_ID} \
-                            -Danypoint.client.secret=${CLIENT_SECRET} \
                             -DmuleDeploy \
                             -P${env.ACTIVE_PROFILES} \
                             -Denv=${env.DEPLOY_ENV}
@@ -127,6 +119,7 @@ pipeline {
           }
       }
   }
+
   
   stage('Adjust Version') {
       when {
