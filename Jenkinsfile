@@ -13,10 +13,6 @@ pipeline {
         checkout scm
       }
     }
-    
-    stage('Clean Workspace') {
-  		steps { deleteDir() }
-	}
 
   stage('Set Environment') {
     steps {
@@ -119,7 +115,6 @@ pipeline {
           }
       }
   }
-
   
   stage('Adjust Version') {
       when {
