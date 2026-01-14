@@ -4,7 +4,7 @@
 
 	<groupId>98add779-6666-4151-9c95-f088b9522ec0</groupId>
 	<artifactId>mule-ci-cd</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.4-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 	
 	<name>mule-ci-cd-${env}</name>
@@ -112,6 +112,7 @@
 			    <extensions>true</extensions>
 			    <configuration>
 			        <classifier>mule-application</classifier>
+			        
 			        <cloudhub2Deployment>
 			            <uri>https://anypoint.mulesoft.com</uri>
 			            <provider>MC</provider>
