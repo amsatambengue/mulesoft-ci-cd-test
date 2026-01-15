@@ -72,22 +72,47 @@ pipeline {
     }
 }
 
+  /*=========================================================
+    DEVELOP : (Re)-Build & Deploy to Development
+    ========================================================= */
+	stage('(Re)-Build & Deploy to Development') {
+	      when { branch 'develop' }
+	      steps {
+	        script {
+	          def anypointCredId = "anypoint-connected-app-development"
+	          withCredentials([
+	            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+	          ]) {
+	            configFileProvider([
+	            		configFile(
+	            			fileId: env.MAVEN_SETTINGS, 
+	            			variable: 'MAVEN_SETTINGS_FILE'
+	            			)]) {
+	              sh """
+	                mvn clean deploy \
+	                  -s \${MAVEN_SETTINGS_FILE} \
+	                  -Danypoint.client.id=\${CLIENT_ID} \
+	                  -Danypoint.client.secret=\${CLIENT_SECRET} \
+	                  -DmuleDeploy \
+	                  -P${env.ACTIVE_PROFILES} \
+                      -Denv=${env.DEPLOY_ENV}
+	              """
+	            }
+	          }
+	        }
+	      }
+	    }       
+
+
   stage('Publish to Exchange') {
       when {
       expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
     }
       steps {
           script {
-              def nexusCredId = 'nexus-releases'
               def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
                             
               withCredentials([
-                  // NEXUS
-                  usernamePassword(
-                      credentialsId: nexusCredId, 
-                      usernameVariable: 'NEXUS_USER',      
-                      passwordVariable: 'NEXUS_PWD'       
-                  ),
                   // ANYPOINT PLATFORM
                   usernamePassword(
                       credentialsId: anypointCredId, 
@@ -115,22 +140,15 @@ pipeline {
       }
   }
   
-    stage('Deploy / Promote CloudHub') {
+    stage('Deploy / Promote CloudHub (no rebuild)') {
       when {
       expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
     }
       steps {
           script {
-              def nexusCredId = 'nexus-releases'
               def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
                             
               withCredentials([
-                  // NEXUS
-                  usernamePassword(
-                      credentialsId: nexusCredId, 
-                      usernameVariable: 'NEXUS_USER',      
-                      passwordVariable: 'NEXUS_PWD'       
-                  ),
                   // ANYPOINT PLATFORM
                   usernamePassword(
                       credentialsId: anypointCredId, 
@@ -149,7 +167,6 @@ pipeline {
                             -s \${MAVEN_SETTINGS_FILE} \
                             -Danypoint.client.id=${CLIENT_ID} \
                             -Danypoint.client.secret=${CLIENT_SECRET} \
-                            -P${env.ACTIVE_PROFILES} \
                             -Denv=${env.DEPLOY_ENV}
                       """
                   }
