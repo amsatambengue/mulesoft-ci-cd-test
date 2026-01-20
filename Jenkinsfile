@@ -72,38 +72,7 @@ pipeline {
     }
 }
 
-  /*=========================================================
-    DEVELOP : (Re)-Build & Deploy to Development
-    ========================================================= */
-	stage('(Re)-Build & Deploy to Development') {
-	      when { branch 'develop' }
-	      steps {
-	        script {
-	          def anypointCredId = "anypoint-connected-app-development"
-	          withCredentials([
-	            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
-	          ]) {
-	            configFileProvider([
-	            		configFile(
-	            			fileId: env.MAVEN_SETTINGS, 
-	            			variable: 'MAVEN_SETTINGS_FILE'
-	            			)]) {
-	              sh """
-	                mvn clean deploy \
-	                  -s \${MAVEN_SETTINGS_FILE} \
-	                  -Danypoint.client.id=\${CLIENT_ID} \
-	                  -Danypoint.client.secret=\${CLIENT_SECRET} \
-	                  -DmuleDeploy \
-	                  -P${env.ACTIVE_PROFILES} \
-                      -Denv=${env.DEPLOY_ENV}
-	              """
-	            }
-	          }
-	        }
-	      }
-	    }       
-
-
+ 
   stage('Publish to Exchange') {
       when {
       expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
@@ -140,6 +109,38 @@ pipeline {
       }
   }
   
+ 
+ /*=========================================================
+    DEVELOP : (Re)-Build & Deploy to Development
+    ========================================================= */
+	stage('(Re)-Build & Deploy to Development') {
+	      when { branch 'develop' }
+	      steps {
+	        script {
+	          def anypointCredId = "anypoint-connected-app-development"
+	          withCredentials([
+	            usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+	          ]) {
+	            configFileProvider([
+	            		configFile(
+	            			fileId: env.MAVEN_SETTINGS, 
+	            			variable: 'MAVEN_SETTINGS_FILE'
+	            			)]) {
+	              sh """
+	                mvn clean deploy \
+	                  -s \${MAVEN_SETTINGS_FILE} \
+	                  -Danypoint.client.id=\${CLIENT_ID} \
+	                  -Danypoint.client.secret=\${CLIENT_SECRET} \
+	                  -DmuleDeploy \
+	                  -P${env.ACTIVE_PROFILES} \
+                      -Denv=${env.DEPLOY_ENV}
+	              """
+	            }
+	          }
+	        }
+	      }
+	    }    
+ 
     stage('Deploy / Promote CloudHub (no rebuild)') {
       when {
       expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' }
