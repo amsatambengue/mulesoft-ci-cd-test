@@ -2,9 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>98add779-6666-4151-9c95-f088b9522ec0</groupId>
+	<groupId>68e06346-7f73-4269-a694-3559ec9627c6</groupId>
 	<artifactId>mule-ci-cd</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.0</version>
 	<packaging>mule-application</packaging>
 		
 	<name>mule-ci-cd-${env}</name>
@@ -26,7 +26,7 @@
 	    <munit.version>3.6.2</munit.version>
 		
 	    <!-- CloudHub 2.0 / RTF / cible par défaut -->
-	    <cloudhub.orgId>98add779-6666-4151-9c95-f088b9522ec0</cloudhub.orgId>
+	    <cloudhub.orgId>68e06346-7f73-4269-a694-3559ec9627c6</cloudhub.orgId>
 	    <cloudhub.environment>${env}</cloudhub.environment>
 	    <cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
 	    <cloudhub.replicas>1</cloudhub.replicas>
