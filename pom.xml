@@ -235,7 +235,7 @@
 		<repository>
 			<id>anypoint-exchange-v3</id>
 			<name>Corporate Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/98add779-6666-4151-9c95-f088b9522ec0/maven</url>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${cloudhub.orgId}/maven</url>
 			<layout>default</layout>
 		</repository>
 	</distributionManagement>
