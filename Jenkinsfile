@@ -116,10 +116,34 @@ pipeline {
       }
     }
 
+
+stage('Publish SNAPSHOT to Exchange (develop)') {
+  when { branch 'develop' }
+  steps {
+    script {
+      def anypointCredId = "anypoint-connected-app-development"
+      withCredentials([
+        usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
+      ]) {
+        configFileProvider([configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')]) {
+          sh """
+            mvn clean deploy \
+              -s \${MAVEN_SETTINGS_FILE} \
+              -Danypoint.client.id=\${CLIENT_ID} \
+              -Danypoint.client.secret=\${CLIENT_SECRET} \
+              -Pci,${env.SIZING_PROFILE}
+          """
+        }
+      }
+    }
+  }
+}
+
+
     /* ======================
        DEVELOP : rebuild + deploy DEV
        ====================== */
-    stage('(Re)-Build & Deploy to Development') {
+    stage('(Re)-Build & Deploy to DEVELOPMENT') {
       when { branch 'develop' }
       steps {
         script {
@@ -132,7 +156,7 @@ pipeline {
               configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
             ]) {
               sh """
-                mvn clean deploy \
+                mvn deploy \
                   -s \${MAVEN_SETTINGS_FILE} \
                   -Danypoint.client.id=\${CLIENT_ID} \
                   -Danypoint.client.secret=\${CLIENT_SECRET} \
@@ -147,7 +171,7 @@ pipeline {
     }
 
     /* ======================
-       RELEASE/* : publish Exchange (release only)
+       RELEASE/* : Publish to Exchange (release only)
        ====================== */
     stage('Publish Release to Exchange') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') } }
@@ -175,10 +199,10 @@ pipeline {
     }
 
     /* ======================
-       RELEASE/* : promote TEST (no rebuild)
-       MAIN      : promote PROD (no rebuild)
+       RELEASE/* : promote TEST
+       MAIN      : promote PROD
        ====================== */
-    stage('Promote (no rebuild)') {
+    stage('Promote to TEST or PROD') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' } }
       steps {
         script {
