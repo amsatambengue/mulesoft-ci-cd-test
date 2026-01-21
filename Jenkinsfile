@@ -117,27 +117,7 @@ pipeline {
     }
 
 
-stage('Publish SNAPSHOT to Exchange (develop)') {
-  when { branch 'develop' }
-  steps {
-    script {
-      def anypointCredId = "anypoint-connected-app-development"
-      withCredentials([
-        usernamePassword(credentialsId: anypointCredId, usernameVariable: 'CLIENT_ID', passwordVariable: 'CLIENT_SECRET')
-      ]) {
-        configFileProvider([configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')]) {
-          sh """
-            mvn clean deploy \
-              -s \${MAVEN_SETTINGS_FILE} \
-              -Danypoint.client.id=\${CLIENT_ID} \
-              -Danypoint.client.secret=\${CLIENT_SECRET} \
-              -Pci,${env.SIZING_PROFILE}
-          """
-        }
-      }
-    }
-  }
-}
+
 
 
     /* ======================
