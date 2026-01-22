@@ -59,7 +59,7 @@ pipeline {
        Version guards
        ====================== */
 
-    stage('Validate Version (develop = SNAPSHOT)') {
+    stage('Validate Develop Version (develop = SNAPSHOT)') {
       when { branch 'develop' }
       steps {
         script {
@@ -103,7 +103,7 @@ pipeline {
       }
     }
 
-    stage('Validate Version (main = release, no SNAPSHOT)') {
+    stage('Validate MAIN Version (main = release, no SNAPSHOT)') {
       when { branch 'main' }
       steps {
         script {
@@ -115,10 +115,6 @@ pipeline {
         }
       }
     }
-
-
-
-
 
     /* ======================
        DEVELOP : rebuild + deploy DEV
