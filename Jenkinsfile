@@ -191,7 +191,7 @@ pipeline {
             configFileProvider([
               configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
             ]) {
-              timeout(time: 15, unit: 'MINUTES') {
+              timeout(time: 45, unit: 'MINUTES') {
                 sh """
                   mvn mule:deploy \
                     -s \${MAVEN_SETTINGS_FILE} \
