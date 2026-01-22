@@ -136,7 +136,7 @@ pipeline {
               configFile(fileId: env.MAVEN_SETTINGS, variable: 'MAVEN_SETTINGS_FILE')
             ]) {
               sh """
-                mvn deploy \
+                mvn clean deploy \
                   -s \${MAVEN_SETTINGS_FILE} \
                   -Danypoint.client.id=\${CLIENT_ID} \
                   -Danypoint.client.secret=\${CLIENT_SECRET} \
