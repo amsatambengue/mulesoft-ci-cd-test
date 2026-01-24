@@ -72,7 +72,7 @@ pipeline {
       }
     }
 
-    stage('Set Release Version (from branch)') {
+    stage('Set Release Version from branch') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') } }
       steps {
         script {
@@ -89,7 +89,7 @@ pipeline {
       }
     }
 
-    stage('Validate Version (release/* = x.y.z)') {
+    stage('Validate Release Version Format') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') } }
       steps {
         script {
@@ -178,7 +178,7 @@ pipeline {
        RELEASE/* : promote TEST
        MAIN      : promote PROD
        ====================== */
-    stage('Promote to TEST or PROD') {
+    stage('Promote Release to TEST or PROD') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' } }
       steps {
         script {
