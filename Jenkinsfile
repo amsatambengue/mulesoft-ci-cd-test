@@ -121,13 +121,6 @@ pipeline {
        ====================== */
     stage('(Re)-Build & Deploy to DEVELOPMENT') {
       when { branch 'develop' }
-
-
-
-  stage('Build, Deploy') {
-      when {
-      	expression { return env.DEPLOY_ENV == 'development' || env.DEPLOY_ENV == 'test' || env.DEPLOY_ENV == 'production' }
-      }
       steps {
         script {
           def anypointCredId = "anypoint-connected-app-development"
@@ -158,25 +151,6 @@ pipeline {
        ====================== */
     stage('Publish Release to Exchange') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') } }
-  }
-  
-  stage('Adjust Version') {
-      when {
-        expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' }
-      }
-      steps {
-        sh '''
-          echo "Suppression de -SNAPSHOT pour release/main"
-          mvn versions:set -DremoveSnapshot
-          mvn versions:commit
-        '''
-      }
-    }
-
-    stage('Promote to Prod') {
-      when {
-      	expression { return env.DEPLOY_ENV == 'production' }
-      }
       steps {
         script {
           def anypointCredId = "anypoint-connected-app-test"
@@ -197,42 +171,6 @@ pipeline {
             }
           }
         }
-          script {
-              def nexusCredId = 'nexus-releases'
-              def anypointCredId = "anypoint-connected-app-${env.DEPLOY_ENV}"
-                            
-              withCredentials([
-                  // NEXUS
-                  usernamePassword(
-                      credentialsId: nexusCredId, 
-                      usernameVariable: 'NEXUS_USER',      
-                      passwordVariable: 'NEXUS_PWD'       
-                  ),
-                  // ANYPOINT PLATFORM
-                  usernamePassword(
-                      credentialsId: anypointCredId, 
-                      usernameVariable: 'CLIENT_ID',       
-                      passwordVariable: 'CLIENT_SECRET'    
-                  )
-              ]) {
-                  configFileProvider([
-                      configFile(
-                          fileId: env.MAVEN_SETTINGS,
-                          variable: 'MAVEN_SETTINGS_FILE'
-                      )
-                  ]) {                   
-                      sh """
-                          mvn clean deploy \
-                            -s \${MAVEN_SETTINGS_FILE} \
-                            -Danypoint.client.id=${CLIENT_ID} \
-                            -Danypoint.client.secret=${CLIENT_SECRET} \
-                            -DmuleDeploy \
-                            -P${env.ACTIVE_PROFILES} \
-                            -Denv=${env.DEPLOY_ENV}
-                      """
-                  }
-              }
-          }
       }
     }
 
