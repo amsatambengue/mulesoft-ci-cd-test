@@ -2,16 +2,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>98add779-6666-4151-9c95-f088b9522ec0</groupId>
+	<groupId>68e06346-7f73-4269-a694-3559ec9627c6</groupId>
 	<artifactId>mule-ci-cd</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>mule-application</packaging>
-	
 	<name>mule-ci-cd-${env}</name>
 
-	<properties>	
-		<app.name>${project.artifactId}-${env}</app.name>	    	
+	<properties>
+		<app.name>${project.artifactId}-${env}</app.name>
 		<!-- env par défaut -->
+		<env>default-envvvv</env>
+		<!-- Encodage & JVM -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<argLine>-Dfile.encoding=UTF-8</argLine>
+		<java.version>17</java.version>
+		<!-- Versions techniques -->
+		<mule.runtime.version>4.9.11</mule.runtime.version>
+		<mule.maven.plugin.version>4.6.1</mule.maven.plugin.version>
+		<munit.version>3.6.2</munit.version>
+		<!-- CloudHub 2.0 / RTF / cible par défaut -->
+		<cloudhub.orgId>68e06346-7f73-4269-a694-3559ec9627c6</cloudhub.orgId>
+		<cloudhub.environment>${env}</cloudhub.environment>
+		<cloudhub.target>Cloudhub-US-East-2</cloudhub.target>
+		<cloudhub.replicas>1</cloudhub.replicas>
+		<cloudhub.vCores>0.1</cloudhub.vCores>
+		<cloudhub.generateDefaultPublicUrl>true</cloudhub.generateDefaultPublicUrl>
+		<!-- Flags CI/CD -->
+		<skipTests>false</skipTests>
+		<skipMunit>false</skipMunit>
 		<env>devvvv</env>
 		
 	    <!-- Encodage & JVM -->
@@ -39,64 +58,61 @@
 	</properties>
 
 	<profiles>
-	    <!-- DEV -->
-	    <profile>
-	        <id>dev-sizing</id>
-	        <activation>
-	            <property>
-	                <name>env</name>
-	                <value>dev</value>
-	            </property>
-	        </activation>
-	        <properties>
-	            <cloudhub.vCores>0.5</cloudhub.vCores>
-	            <cloudhub.replicas>2</cloudhub.replicas>
-	        </properties>
-	    </profile>
-	
-	    <!-- TEST -->
-	    <profile>
-	        <id>test-sizing</id>
-	        <activation>
-	            <property>
-	                <name>env</name>
-	                <value>test</value>
-	            </property>
-	        </activation>
-	        <properties>
-	            <cloudhub.vCores>0.2</cloudhub.vCores>
-	            <cloudhub.replicas>1</cloudhub.replicas>
-	        </properties>
-	    </profile>
-	
-	    <!-- PROD -->
-	    <profile>
-	        <id>prod-sizing</id>
-	        <activation>
-	            <property>
-	                <name>env</name>
-	                <value>prod</value>
-	            </property>
-	        </activation>
-	        <properties>
-	            <cloudhub.vCores>0.5</cloudhub.vCores>
-	            <cloudhub.replicas>2</cloudhub.replicas>
-	        </properties>
-	    </profile>
-	   	<!-- CI -->
-	    <profile>
-	    	<id>ci</id>
+		<!-- DEV -->
+		<profile>
+			<id>dev-sizing</id>
+			<activation>
+				<property>
+					<name>env</name>
+					<value>dev</value>
+				</property>
+			</activation>
 			<properties>
-			    <!-- Skip JUnit tests -->
-			    <maven.test.skip>true</maven.test.skip>
-			    <!-- Skip MUnit tests -->
-			    <munit.skip>true</munit.skip>
-			    <!-- Force encoding for CI -->
-			    <argLine>-Dfile.encoding=UTF-8</argLine>
+				<cloudhub.vCores>0.1</cloudhub.vCores>
+				<cloudhub.replicas>2</cloudhub.replicas>
 			</properties>
-		</profile>	    
+		</profile>
+		<!-- TEST -->
+		<profile>
+			<id>test-sizing</id>
+			<activation>
+				<property>
+					<name>env</name>
+					<value>test</value>
+				</property>
+			</activation>
+			<properties>
+				<cloudhub.vCores>0.2</cloudhub.vCores>
+				<cloudhub.replicas>1</cloudhub.replicas>
+			</properties>
+		</profile>
+		<!-- PROD -->
+		<profile>
+			<id>prod-sizing</id>
+			<activation>
+				<property>
+					<name>env</name>
+					<value>prod</value>
+				</property>
+			</activation>
+			<properties>
+				<cloudhub.vCores>0.5</cloudhub.vCores>
+				<cloudhub.replicas>2</cloudhub.replicas>
+			</properties>
+		</profile>
+		<!-- CI -->
+		<profile>
+			<id>ci</id>
+			<properties>
+				<!-- Skip JUnit tests -->
+				<maven.test.skip>true</maven.test.skip>
+				<!-- Skip MUnit tests -->
+				<munit.skip>true</munit.skip>
+				<!-- Force encoding for CI -->
+				<argLine>-Dfile.encoding=UTF-8</argLine>
+			</properties>
+		</profile>
 	</profiles>
-
 
 	<build>
 		<plugins>
@@ -106,27 +122,28 @@
 				<version>3.2.0</version>
 			</plugin>
 			<plugin>
-			    <groupId>org.mule.tools.maven</groupId>
-			    <artifactId>mule-maven-plugin</artifactId>
-			    <version>${mule.maven.plugin.version}</version>
-			    <extensions>true</extensions>
-			    <configuration>
-			        <cloudhub2Deployment>
-			            <uri>https://anypoint.mulesoft.com</uri>
-			            <provider>MC</provider>
-			            <!-- utilisation des propriétés -->
-			            <environment>${cloudhub.environment}</environment>
-			            <target>${cloudhub.target}</target>
-			            <muleVersion>${mule.runtime.version}</muleVersion>
-			            <server>anypoint-exchange-v3</server>
-			            <applicationName>${app.name}</applicationName>
-			            <replicas>${cloudhub.replicas}</replicas>
-			            <vCores>${cloudhub.vCores}</vCores>
-			            <deploymentSettings>
-			                <generateDefaultPublicUrl>${cloudhub.generateDefaultPublicUrl}</generateDefaultPublicUrl>
-			            </deploymentSettings>
-			        </cloudhub2Deployment>
-			    </configuration>
+				<groupId>org.mule.tools.maven</groupId>
+				<artifactId>mule-maven-plugin</artifactId>
+				<version>${mule.maven.plugin.version}</version>
+				<extensions>true</extensions>
+				<configuration>
+					<classifier>mule-application</classifier>
+					<cloudhub2Deployment>
+						<uri>https://anypoint.mulesoft.com</uri>
+						<provider>MC</provider>
+						<!-- utilisation des propriétés -->
+						<environment>${cloudhub.environment}</environment>
+						<target>${cloudhub.target}</target>
+						<muleVersion>${mule.runtime.version}</muleVersion>
+						<server>anypoint-exchange-v3</server>
+						<applicationName>${app.name}</applicationName>
+						<replicas>${cloudhub.replicas}</replicas>
+						<vCores>${cloudhub.vCores}</vCores>
+						<deploymentSettings>
+							<generateDefaultPublicUrl>${cloudhub.generateDefaultPublicUrl}</generateDefaultPublicUrl>
+						</deploymentSettings>
+					</cloudhub2Deployment>
+				</configuration>
 			</plugin>
 
 			<plugin>
@@ -144,8 +161,8 @@
 					</execution>
 				</executions>
 				<configuration>
-				    <!-- Lien avec profil ci -->
-    				<skipMunitTests>${munit.skip}</skipMunitTests>
+					<!-- Lien avec profil ci -->
+					<skipMunitTests>${munit.skip}</skipMunitTests>
 					<coverage>
 						<runCoverage>true</runCoverage>
 						<failBuild>true</failBuild>
@@ -161,12 +178,6 @@
 	</build>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.mule.connectors</groupId>
-			<artifactId>mule-http-connector</artifactId>
-			<version>1.11.0</version>
-			<classifier>mule-plugin</classifier>
-		</dependency>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-sockets-connector</artifactId>
@@ -193,6 +204,12 @@
 			<version>1.2.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-http-connector</artifactId>
+			<version>1.11.1</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
 	</dependencies>
 
 	<repositories>
@@ -203,37 +220,35 @@
 			<layout>default</layout>
 		</repository>
 		<repository>
-            <id>mulesoft-enterprise</id>
-            <name>MuleSoft Enterprise Repository</name>
-            <url>https://repository.mulesoft.org/nexus/content/repositories/releases-ee/</url>
-        </repository>
-  
-		  <repository>
-		    <id>mulesoft-public</id>
-		    <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
-		  </repository>
-		  <repository>
-		    <id>mulesoft-releases</id>
-		    <url>https://repository.mulesoft.org/nexus/content/repositories/releases/</url>
-		  </repository>
+			<id>mulesoft-enterprise</id>
+			<name>MuleSoft Enterprise Repository</name>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/releases-ee/</url>
+		</repository>
+		<repository>
+			<id>mulesoft-public</id>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
+		</repository>
+		<repository>
+			<id>mulesoft-releases</id>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/releases/</url>
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
-	  	  <pluginRepository>
-		    <id>mulesoft-public</id>
-		    <url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
-		  </pluginRepository>
-		  <pluginRepository>
-		    <id>mulesoft-releases</id>
-		    <url>https://repository.mulesoft.org/nexus/content/repositories/releases/</url>
-		  </pluginRepository>
-	</pluginRepositories> 
-	
+		<pluginRepository>
+			<id>mulesoft-public</id>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/public/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>mulesoft-releases</id>
+			<url>https://repository.mulesoft.org/nexus/content/repositories/releases/</url>
+		</pluginRepository>
+	</pluginRepositories>
 	<distributionManagement>
 		<repository>
 			<id>anypoint-exchange-v3</id>
 			<name>Corporate Repository</name>
-			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/98add779-6666-4151-9c95-f088b9522ec0/maven</url>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/${cloudhub.orgId}/maven</url>
 			<layout>default</layout>
 		</repository>
 	</distributionManagement>
