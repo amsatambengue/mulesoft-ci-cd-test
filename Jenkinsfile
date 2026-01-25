@@ -41,38 +41,21 @@ pipeline {
           env.ACTIVE_PROFILES = "ci,${config.sizingProfile}"
 
           echo """
-════════════════════════════════════════════════════════════
-📌 Configuration du Pipeline
-════════════════════════════════════════════════════════════
-🌿 Branche               : ${env.BRANCH_NAME}
-🌍 Environnement         : ${env.DEPLOY_ENV}
-📦 Sizing Profile        : ${env.SIZING_PROFILE}
-📋 Maven Settings        : ${env.MAVEN_SETTINGS}
-🔧 Profils Maven actifs  : ${env.ACTIVE_PROFILES}
-════════════════════════════════════════════════════════════
-"""
+			════════════════════════════════════════════════════════════
+			📌 Configuration du Pipeline
+			════════════════════════════════════════════════════════════
+			🌿 Branche               : ${env.BRANCH_NAME}
+			🌍 Environnement         : ${env.DEPLOY_ENV}
+			📦 Sizing Profile        : ${env.SIZING_PROFILE}
+			📋 Maven Settings        : ${env.MAVEN_SETTINGS}
+			🔧 Profils Maven actifs  : ${env.ACTIVE_PROFILES}
+			════════════════════════════════════════════════════════════
+			"""
         }
       }
     }
 
-    /* ======================
-       Version guards
-       ====================== */
-
-    stage('Validate Develop Version (develop = SNAPSHOT)') {
-      when { branch 'develop' }
-      steps {
-        script {
-          def v = sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.version", returnStdout: true).trim()
-          echo "📦 Version: ${v}"
-          if (!v.contains("SNAPSHOT")) {
-            error "❌ develop doit rester en SNAPSHOT (ex: 1.0.1-SNAPSHOT). Reçu: ${v}"
-          }
-        }
-      }
-    }
-
-    stage('Set Release Version from branch') {
+    stage('Check & Set Release Version') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') } }
       steps {
         script {
@@ -88,33 +71,53 @@ pipeline {
         }
       }
     }
+    
+    /* ======================
+       Version guards - Validation
+       ====================== */
 
-    stage('Validate Release Version Format') {
-      when { expression { return env.BRANCH_NAME.startsWith('release/') } }
-      steps {
-        script {
-          def rel = env.BRANCH_NAME.replace('release/', '').trim()
-          def v = sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.version", returnStdout: true).trim()
-          echo "📦 Version: ${v} | Branche: ${rel}"
+	stage('Validate Version Policy') {
+	  steps {
+	    script {
+	      def branch = env.BRANCH_NAME ?: ''
+	      def v = sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.version", returnStdout: true).trim()
+	      echo "📦 Validate Version | Branch=${branch} | Version=${v}"
+	
+	      if (branch == 'develop') {
+	        if (!v.contains('SNAPSHOT')) {
+	          error "❌ develop doit rester en SNAPSHOT (version=${v})"
+	        }
+	        return
+	      }
+	
+	      if (branch.startsWith('release/')) {
+	        def rel = branch.replace('release/', '').trim()
+	        if (!rel.matches('\\d+\\.\\d+\\.\\d+')) {
+	          error "❌ Branche release invalide: ${branch} (attendu release/x.y.z)"
+	        }
+	        if (v.contains('SNAPSHOT')) {
+	          error "❌ SNAPSHOT interdit sur release/* (version=${v})"
+	        }
+	        if (v != rel) {
+	          error "❌ Version POM (${v}) != version de branche (${rel})"
+	        }
+	        return
+	      }
+	
+	      if (branch == 'main') {
+	        if (v.contains('SNAPSHOT')) {
+	          error "❌ SNAPSHOT interdit sur main (version=${v})"
+	        }
+	        return
+	      }
+	
+	      // autres branches (feature/* etc.) : on ne bloque pas (ou tu peux choisir de bloquer)
+	      echo "ℹ️ Branche non gouvernée par policy (pas de blocage): ${branch}"
+	    }
+	  }
+	}
 
-          if (v.contains("SNAPSHOT")) error "❌ SNAPSHOT interdit sur release/* (version=${v})"
-          if (v != rel) error "❌ Version POM (${v}) != version de branche (${rel})"
-        }
-      }
-    }
 
-    stage('Validate MAIN Version (main = release, no SNAPSHOT)') {
-      when { branch 'main' }
-      steps {
-        script {
-          def v = sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.version", returnStdout: true).trim()
-          echo "📦 Version: ${v}"
-          if (v.contains("SNAPSHOT")) {
-            error "❌ SNAPSHOT interdit sur main. Main doit promouvoir une release déjà publiée."
-          }
-        }
-      }
-    }
 
     /* ======================
        DEVELOP : rebuild + deploy DEV
