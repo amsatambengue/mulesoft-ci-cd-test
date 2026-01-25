@@ -10,10 +10,11 @@
 	<name>mule-ci-cd-${env}</name>
 
 	<properties>	
-		<app.name>${project.artifactId}-${env}</app.name>	    	
 		<!-- env par défaut -->
 		<env>default-envvvv</env>
 		
+		<app.name>${project.artifactId}-${env}</app.name>	    	
+	
 	    <!-- Encodage & JVM -->
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
