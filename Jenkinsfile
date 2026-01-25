@@ -55,63 +55,77 @@ pipeline {
       }
     }
 
-    stage('Check & Set Release Version') {
-      when { expression { return env.BRANCH_NAME.startsWith('release/') } }
-      steps {
-        script {
-          def rel = env.BRANCH_NAME.replace('release/', '').trim()
-          if (!rel.matches('\\d+\\.\\d+\\.\\d+')) {
-            error "❌ Branche release invalide: ${env.BRANCH_NAME} (attendu release/x.y.z)"
-          }
-          sh """
-            echo "📌 Setting Maven version to ${rel}"
-            mvn -q versions:set -DnewVersion=${rel}
-            mvn -q versions:commit
-          """
-        }
-      }
-    }
-    
-    /* ======================
-       Version guards - Validation
-       ====================== */
-
-	stage('Validate Version Policy') {
+	stage('Set/Validate Version Policy') {
 	  steps {
 	    script {
 	      def branch = env.BRANCH_NAME ?: ''
-	      def v = sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.version", returnStdout: true).trim()
-	      echo "📦 Validate Version | Branch=${branch} | Version=${v}"
+	      def readVersion = { ->
+	        sh(script: "mvn -q -DforceStdout help:evaluate -Dexpression=project.version", returnStdout: true).trim()
+	      }
+	      def toInts = { String vv ->
+	        def p = vv.tokenize('.')
+	        if (p.size() != 3) error "❌ Version non comparable (attendu x.y.z): ${vv}"
+	        p.collect { it as int }
+	      }
+	      def isLess = { a, b -> // a < b
+	        (a[0] < b[0]) || (a[0]==b[0] && a[1] < b[1]) || (a[0]==b[0] && a[1]==b[1] && a[2] < b[2])
+	      }
 	
+	      // Lire la version actuelle du POM avant toute modif
+	      def cur = readVersion()
+	      echo "📦 Pre-check | Branch=${branch} | POM=${cur}"
+	
+	      // 1) Si release/* : fixer la version depuis le nom de branche
+	      if (branch.startsWith('release/')) {
+	        def rel = branch.replace('release/', '').trim()
+	        if (!rel.matches('\\d+\\.\\d+\\.\\d+')) {
+	          error "❌ Branche release invalide: ${branch} (attendu release/x.y.z)"
+	        }
+	
+	        // anti-downgrade : rel >= base(cur sans -SNAPSHOT)
+	        def base = cur.replace('-SNAPSHOT','')
+	        def b = toInts(base)
+	        def r = toInts(rel)
+	        if (isLess(r, b)) {
+	          error "❌ Release ${rel} < base ${base}. Downgrade interdit."
+	        }
+	
+	        sh """
+	          echo "📌 Setting Maven version to ${rel}"
+	          mvn -q versions:set -DnewVersion=${rel}
+	          mvn -q versions:commit
+	        """
+	        // relire après set
+	        cur = readVersion()
+	        echo "📦 Post-set | Branch=${branch} | POM=${cur}"
+	      }
+	
+	      // 2) Validation policy par branche (après set éventuel)
 	      if (branch == 'develop') {
-	        if (!v.contains('SNAPSHOT')) {
-	          error "❌ develop doit rester en SNAPSHOT (version=${v})"
+	        if (!cur.contains('SNAPSHOT')) {
+	          error "❌ develop doit rester en SNAPSHOT (version=${cur})"
 	        }
 	        return
 	      }
 	
 	      if (branch.startsWith('release/')) {
 	        def rel = branch.replace('release/', '').trim()
-	        if (!rel.matches('\\d+\\.\\d+\\.\\d+')) {
-	          error "❌ Branche release invalide: ${branch} (attendu release/x.y.z)"
+	        if (cur.contains('SNAPSHOT')) {
+	          error "❌ SNAPSHOT interdit sur release/* (version=${cur})"
 	        }
-	        if (v.contains('SNAPSHOT')) {
-	          error "❌ SNAPSHOT interdit sur release/* (version=${v})"
-	        }
-	        if (v != rel) {
-	          error "❌ Version POM (${v}) != version de branche (${rel})"
+	        if (cur != rel) {
+	          error "❌ Version POM (${cur}) != version de branche (${rel})"
 	        }
 	        return
 	      }
 	
 	      if (branch == 'main') {
-	        if (v.contains('SNAPSHOT')) {
-	          error "❌ SNAPSHOT interdit sur main (version=${v})"
+	        if (cur.contains('SNAPSHOT')) {
+	          error "❌ SNAPSHOT interdit sur main (version=${cur})"
 	        }
 	        return
 	      }
 	
-	      // autres branches (feature/* etc.) : on ne bloque pas (ou tu peux choisir de bloquer)
 	      echo "ℹ️ Branche non gouvernée par policy (pas de blocage): ${branch}"
 	    }
 	  }
@@ -119,10 +133,7 @@ pipeline {
 
 
 
-    /* ======================
-       DEVELOP : rebuild + deploy DEV
-       ====================== */
-    stage('(Re)-Build & Deploy to DEVELOPMENT') {
+    stage('Build & Deploy/ReDeploy to DEV') {
       when { branch 'develop' }
       steps {
         script {
@@ -149,9 +160,6 @@ pipeline {
       }
     }
 
-    /* ======================
-       RELEASE/* : Publish to Exchange (release only)
-       ====================== */
     stage('Publish Release to Exchange') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') } }
       steps {
@@ -177,11 +185,8 @@ pipeline {
       }
     }
 
-    /* ======================
-       RELEASE/* : promote TEST
-       MAIN      : promote PROD
-       ====================== */
-    stage('Promote Release to TEST or PROD') {
+
+    stage('Promote Release to TEST/PROD') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' } }
       steps {
         script {
