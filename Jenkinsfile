@@ -8,11 +8,11 @@ pipeline {
 
   stages {
 
-    stage('Checkout') {
+    stage('Source Checkout') {
       steps { checkout scm }
     }
 
-    stage('Set Environment') {
+    stage('Resolve Target Environment') {
       steps {
         script {
           echo "Branche détectée : ${env.BRANCH_NAME}"
@@ -41,21 +41,21 @@ pipeline {
           env.ACTIVE_PROFILES = "ci,${config.sizingProfile}"
 
           echo """
-      ════════════════════════════════════════════════════════════
-      📌 Configuration du Pipeline
-      ════════════════════════════════════════════════════════════
-      🌿 Branche               : ${env.BRANCH_NAME}
-      🌍 Environnement         : ${env.DEPLOY_ENV}
-      📦 Sizing Profile        : ${env.SIZING_PROFILE}
-      📋 Maven Settings        : ${env.MAVEN_SETTINGS}
-      🔧 Profils Maven actifs  : ${env.ACTIVE_PROFILES}
-      ════════════════════════════════════════════════════════════
-      """
+	      ════════════════════════════════════════════════════════════
+	      📌 Configuration du Pipeline
+	      ════════════════════════════════════════════════════════════
+	      🌿 Branche               : ${env.BRANCH_NAME}
+	      🌍 Environnement         : ${env.DEPLOY_ENV}
+	      📦 Sizing Profile        : ${env.SIZING_PROFILE}
+	      📋 Maven Settings        : ${env.MAVEN_SETTINGS}
+	      🔧 Profils Maven actifs  : ${env.ACTIVE_PROFILES}
+	      ════════════════════════════════════════════════════════════
+    	  """
         }
       }
     }
 
-  stage('Set/Validate Version Policy') {
+  stage('Enforce Versioning Policy') {
     steps {
       script {
         def branch = env.BRANCH_NAME ?: ''
@@ -133,7 +133,7 @@ pipeline {
 
 
 
-    stage('Build & Deploy/ReDeploy to DEV') {
+    stage('Build & Deploy to Development') {
       when { branch 'develop' }
       steps {
         script {
@@ -160,7 +160,7 @@ pipeline {
       }
     }
 
-    stage('Publish Release to Exchange') {
+    stage('Publish Release Artifact') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') } }
       steps {
         script {
@@ -187,7 +187,7 @@ pipeline {
     }
 
 
-    stage('Promote Release to TEST/PROD') {
+    stage('Promote Artifact to Target Environment') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' } }
       steps {
         script {
