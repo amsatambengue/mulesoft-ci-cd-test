@@ -186,7 +186,6 @@ pipeline {
       }
     }
 
-
     stage('Promote Artifact to Target Env') {
       when { expression { return env.BRANCH_NAME.startsWith('release/') || env.BRANCH_NAME == 'main' } }
       steps {
